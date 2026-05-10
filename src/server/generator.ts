@@ -1,5 +1,6 @@
 import { HTMLRenderer } from "../template/renderer";
 import type { Presentation } from "../types";
+import { consoleError } from "../cli/utils";
 
 export class ServerHTMLGenerator {
   private renderer: HTMLRenderer;
@@ -23,7 +24,7 @@ export class ServerHTMLGenerator {
     });
 
     if (!buildResult.success || buildResult.outputs.length === 0) {
-      console.error(buildResult.logs);
+      consoleError("Failed to build client runtime", JSON.stringify(buildResult.logs));
       throw new Error("Failed to build client runtime");
     }
 

@@ -1,11 +1,18 @@
-import { parseArguments, showHelp, type CLIOptions, consoleError, consoleSuccess } from "./utils";
+import {
+  parseArguments,
+  showHelp,
+  type CLIOptions,
+  consoleError,
+  consoleSuccess,
+  consoleInfo,
+} from "./utils";
 import { build } from "./builder";
 import { startServer } from "../server/index";
 
 export async function runCLI(args: string[]): Promise<string> {
   try {
     if (args.length === 0) {
-      console.log(showHelp());
+      consoleInfo(showHelp());
       process.exit(0);
     }
 
@@ -29,7 +36,7 @@ export async function runCLI(args: string[]): Promise<string> {
             process.exit(1);
           }
         } else if (arg === "-h" || arg === "--help") {
-          console.log(`
+          consoleInfo(`
 slide-bun serve - Start development server
 
 Usage:
@@ -57,7 +64,7 @@ Options:
 
     // Check for version flag
     if (args.includes("--version") || args.includes("-v")) {
-      console.log("Slide Bun v0.0.1");
+      consoleInfo("Slide Bun v0.0.1");
       process.exit(0);
     }
 
@@ -65,19 +72,19 @@ Options:
     const { inputPath, options } = parseArguments(args);
 
     if (options.help) {
-      console.log(showHelp());
+      consoleInfo(showHelp());
       process.exit(0);
     }
 
     return build(inputPath, options).then((outPath) => {
       if (options.autoOpen) {
-        console.log("Opening in browser...");
+        consoleInfo("Opening in browser...");
         Bun.spawn(["open", outPath]);
       }
       return outPath;
     });
   } catch (error) {
-    console.error(error);
+    consoleError("予期しないエラーが発生しました", (error as Error).message);
     process.exit(1);
   }
 }

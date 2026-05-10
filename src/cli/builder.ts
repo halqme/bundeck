@@ -43,7 +43,7 @@ export async function build(inputPath: string, options: CLIOptions): Promise<str
     });
 
     if (!buildResult.success || buildResult.outputs.length === 0) {
-      console.error(buildResult.logs);
+      consoleError("Failed to build client runtime", JSON.stringify(buildResult.logs));
       throw new Error("Failed to build client runtime");
     }
 

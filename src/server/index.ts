@@ -2,6 +2,7 @@ import { watch } from "fs";
 import * as path from "path";
 import { parseMarkdown } from "../core/parser";
 import { ServerHTMLGenerator } from "./generator";
+import { consoleInfo, consoleError, consoleWarn } from "../cli/utils";
 
 export async function startServer(inputPath: string, port: number) {
   const absoluteInputPath = path.resolve(inputPath);
@@ -16,7 +17,7 @@ export async function startServer(inputPath: string, port: number) {
   const initial = await generator.generate(presentation);
   if (typeof initial === "string") {
     currentHTML = initial;
-    console.log("Generated HTML with inline assets");
+    consoleInfo("Generated HTML with inline assets");
   } else {
     currentHTML = initial.html;
     assetsMemory = initial.assets;
@@ -25,11 +26,11 @@ export async function startServer(inputPath: string, port: number) {
   // Clients for HMR
   const clients = new Set<ReadableStreamDefaultController>();
 
-  console.log(`Starting server for ${inputPath} on http://localhost:${port}`);
+  consoleInfo(`Starting server for ${inputPath} on http://localhost:${port}`);
 
   // Watch for changes
   const watcher = watch(absoluteInputPath, async (event, filename) => {
-    console.log(`File changed: ${filename}. Rebuilding...`);
+    consoleInfo(`File changed: ${filename}. Rebuilding...`);
     try {
       presentation = await loadPresentation(absoluteInputPath);
       const result = await generator.generate(presentation);
@@ -51,7 +52,7 @@ export async function startServer(inputPath: string, port: number) {
             // Controller is already closed, mark for removal
             closedControllers.push(controller);
           } else {
-            console.error("Error notifying client:", error);
+            consoleError("Error notifying client", (error as Error).message);
           }
         }
       }
@@ -61,7 +62,7 @@ export async function startServer(inputPath: string, port: number) {
         clients.delete(controller);
       }
     } catch (e) {
-      console.error("Error rebuilding:", e);
+      consoleError("Error rebuilding", (e as Error).message);
     }
   });
 
@@ -101,10 +102,7 @@ export async function startServer(inputPath: string, port: number) {
         if (assetsMemory?.mainCss) {
           return new Response(assetsMemory.mainCss, { headers: { "Content-Type": "text/css" } });
         }
-        console.error("CSS assets not found in memory", {
-          hasAssets: !!assetsMemory,
-          hasMainCss: !!assetsMemory?.mainCss,
-        });
+        consoleWarn("CSS assets not found in memory");
         return new Response("Not Found", { status: 404 });
       }
 

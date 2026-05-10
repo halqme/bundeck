@@ -1,6 +1,7 @@
 /**
  * アスペクト比関連のユーティリティ関数
  */
+import { consoleWarn } from "../cli/utils";
 
 export interface AspectRatioDimensions {
   width: number;
@@ -38,7 +39,7 @@ export function parseAspectRatio(
   // "16:9" 形式をパース
   const parts = aspectRatio.split(":");
   if (parts.length !== 2) {
-    console.warn(`Invalid aspect ratio format: ${aspectRatio || "undefined"}, using default 16:9`);
+    consoleWarn(`Invalid aspect ratio format: ${aspectRatio || "undefined"}, using default 16:9`);
     return { width: DEFAULT_BASE_WIDTH, height: DEFAULT_BASE_HEIGHT };
   }
 
@@ -46,7 +47,7 @@ export function parseAspectRatio(
   const heightRatio = parseFloat(parts[1] || "");
 
   if (isNaN(widthRatio) || isNaN(heightRatio) || widthRatio <= 0 || heightRatio <= 0) {
-    console.warn(`Invalid aspect ratio values: ${aspectRatio || "undefined"}, using default 16:9`);
+    consoleWarn(`Invalid aspect ratio values: ${aspectRatio || "undefined"}, using default 16:9`);
     return { width: DEFAULT_BASE_WIDTH, height: DEFAULT_BASE_HEIGHT };
   }
 

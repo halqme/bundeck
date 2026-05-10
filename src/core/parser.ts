@@ -8,6 +8,7 @@ import {
 } from "./extensions";
 import { splitTokensToSlides } from "./splitter";
 import type { Presentation, PresentationMeta } from "../types";
+import { consoleWarn } from "../cli/utils";
 
 export class MarkdownParser {
   private markedInstance: Marked;
@@ -46,7 +47,7 @@ export class MarkdownParser {
         const data = (Bun.YAML.parse(yamlPart) as Record<string, any>) || {};
         return { data, content: contentPart };
       } catch (e) {
-        console.warn("Failed to parse YAML frontmatter:", e);
+        consoleWarn(`Failed to parse YAML frontmatter: ${(e as Error).message}`);
         return { data: {}, content: raw };
       }
     }
