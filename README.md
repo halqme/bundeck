@@ -191,6 +191,57 @@ Don't forget to mention the new features!
    bun run build
    ```
 
+## 📄 API Documentation
+
+For detailed API reference, see [API.md](API.md).
+
+### Programmatic Usage
+
+```typescript
+import { generateSlides, parseSlides } from "slide_bun";
+
+// 基本的な使用
+const markdown = `# Title\n\n---\n\n# Slide 2`;
+const html = await generateSlides(markdown);
+
+// オプション付き
+const html = await generateSlides(markdown, {
+  title: "My Presentation",
+  theme: "dark",
+  outputPath: "output.html",
+});
+```
+
+### Performance
+
+Slide Bun is optimized for speed:
+
+| Scenario                         | Time    |
+| -------------------------------- | ------- |
+| 5,000 char Markdown (5 slides)   | < 100ms |
+| 15,000 char Markdown (10 slides) | < 500ms |
+| 50 slides                        | < 1s    |
+
+## 📁 Project Structure
+
+```
+slide_bun/
+├── src/
+│   ├── cli/          # CLI tools
+│   ├── core/         # Core parsing logic
+│   ├── client/       # Browser runtime
+│   ├── server/       # Development server
+│   ├── template/     # HTML template
+│   └── types/        # TypeScript types
+├── tests/            # Test suites
+├── styles/          # CSS themes
+└── examples/        # Example presentations
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read our contributing guidelines before submitting PRs.
+
 ## 📄 License
 
 MIT

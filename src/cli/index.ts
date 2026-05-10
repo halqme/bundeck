@@ -1,4 +1,4 @@
-import { parseArguments, showHelp, type CLIOptions } from "./utils";
+import { parseArguments, showHelp, type CLIOptions, consoleError, consoleSuccess } from "./utils";
 import { build } from "./builder";
 import { startServer } from "../server/index";
 
@@ -25,7 +25,7 @@ export async function runCLI(args: string[]): Promise<string> {
               port = parseInt(portStr, 10);
             }
           } else {
-            console.error("Error: --port requires a number");
+            consoleError("--portには数値を指定してください", "例: --port 8080");
             process.exit(1);
           }
         } else if (arg === "-h" || arg === "--help") {
@@ -33,7 +33,7 @@ export async function runCLI(args: string[]): Promise<string> {
 slide-bun serve - Start development server
 
 Usage:
-  slide-bun serve <input.md> [options]
+  slide-bun serve <input.md> [Options]
 
 Options:
   -p, --port <number>    Set server port (default: 3000)
@@ -46,10 +46,11 @@ Options:
       }
 
       if (!inputPath) {
-        console.error("Error: Input file is required for serve");
+        consoleError("serveコマンドには入力ファイルが必要です", "slide-bun serve <input.md>");
         process.exit(1);
       }
 
+      consoleSuccess(`Starting server on port ${port}...`);
       await startServer(inputPath, port);
       return ""; // Server keeps running
     }
@@ -70,7 +71,7 @@ Options:
 
     return build(inputPath, options).then((outPath) => {
       if (options.autoOpen) {
-        console.log("Opening...");
+        console.log("Opening in browser...");
         Bun.spawn(["open", outPath]);
       }
       return outPath;
