@@ -271,8 +271,8 @@ export class HTMLRenderer {
       <style>
         :root { ${aspectRatioStyles} }
       </style>
-      <link rel="stylesheet" href="/assets/styles.css">
       <link rel="stylesheet" href="/assets/theme.css">
+      <link rel="stylesheet" href="/assets/styles.css">
       <link rel="stylesheet" href="/assets/view-ui.css">${presenterLink}
       <link rel="stylesheet" href="/assets/print.css" media="print">
     `.trim();
@@ -334,7 +334,8 @@ export class HTMLRenderer {
 
   private processFinalHTML(html: string): string {
     // 常にHTMLコメントを削除（minify設定に関わらず）
-    const withoutComments = this.minifier.removeComments(html).replace(/^(\s+|\t)/gm, "");
+    // NOTE: 行頭の空白は削除しない — <pre><code> 内のコードインデントを保持するため
+    const withoutComments = this.minifier.removeComments(html);
 
     // minifyが有効な場合は最終的なHTMLを最小化
     return this.enableMinify ? this.minifier.minify(withoutComments) : withoutComments;
