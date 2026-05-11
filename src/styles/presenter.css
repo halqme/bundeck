@@ -156,15 +156,29 @@ body.mode-presenter {
   flex-direction: column;
 }
 
-#presenter-current iframe {
-  flex: 1;
+#slide-frame-container {
+  /* Sizing is handled by PresenterUI.fitSlideFrame() in JavaScript —
+     guarantees the aspect ratio from the markdown file's frontmatter
+     is always maintained regardless of viewport size. */
+  flex: none;
+  align-self: center;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+}
+
+#slide-frame-container iframe {
   width: 100%;
+  height: 100%;
   border: none;
   pointer-events: none;
 }
 
-/* Simple Slide Controls */
+/* Simple Slide Controls — pushed to the bottom of the flex container */
 #presenter-slide-controls {
+  margin-top: auto;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -172,6 +186,7 @@ body.mode-presenter {
   padding: 12px;
   background: #2a2a3a;
   border-top: 1px solid #444;
+  flex-shrink: 0;
 }
 
 #presenter-slide-controls button {
@@ -344,51 +359,26 @@ body.mode-presenter {
   background: #666;
 }
 
-/* Laser Pointer Mode */
-#presenter-current.laser-pointer-active {
-  cursor: none;
-}
-
-/* Simple laser pointer cursor element */
+/* Laser pointer cursor overlay — matches view-mode design (12px + glow) */
 #presenter-cursor {
   position: fixed;
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: #f00;
+  background: #ff0000;
+  box-shadow:
+    0 0 8px #ff0000,
+    0 0 16px #ff0000;
   pointer-events: none;
   z-index: 9999;
   transform: translate(-50%, -50%);
+  transition: opacity 0.2s;
   opacity: 0;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 #presenter-cursor.active {
-  opacity: 1;
-}
-
-/* Simple laser pointer overlay */
-#laser-pointer-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-  z-index: 100;
-}
-
-#presenter-laser-pointer {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #f00;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  opacity: 0;
-}
-
-#presenter-laser-pointer.active {
   opacity: 1;
 }
 
@@ -458,7 +448,6 @@ body.mode-presenter {
 @media (prefers-reduced-motion: reduce) {
   #presenter-slide-controls button,
   #presenter-cursor,
-  #presenter-laser-pointer,
   #presenter-progress-bar .progress-fill {
     transition: none;
     animation: none;

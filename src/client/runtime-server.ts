@@ -189,6 +189,8 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
   // 2. UI
   const ui = new PresenterUI();
   ui.mount();
+  // Aspect ratio is set via CSS custom properties (--slide-ratio-w / --slide-ratio-h)
+  // injected at build time from the markdown file's frontmatter.
   (window as any).__presenterUI = ui;
 
   // 3. State
@@ -250,7 +252,8 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
   };
 
   const normalizePointer = (clientX: number, clientY: number) => {
-    const frame = document.querySelector<HTMLIFrameElement>("#presenter-current iframe");
+    // Use the aspect-ratio wrapper for accurate bounds matching the slide ratio
+    const frame = document.querySelector<HTMLElement>("#presenter-current > :first-child");
     if (!frame) return { x: 0.5, y: 0.5, valid: false };
 
     const { slideWidth, slideHeight } = getSlideDimensions();
@@ -301,11 +304,18 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
   (window as any).__togglePresenterPointer = () => {
     isLaserPointerOn = !isLaserPointerOn;
     if (isLaserPointerOn) {
-      const { x, y } = normalizePointer(window.innerWidth / 2, window.innerHeight / 2);
+      const { x, y, area } = normalizePointer(window.innerWidth / 2, window.innerHeight / 2);
       sendPointerUpdate(x, y, true);
       lastPointerSendTime = Date.now();
+      // Update the presenter's own overlay to the center of the slide area
+      const presenterUI = (window as any).__presenterUI;
+      if (presenterUI?.updateLaserPointerPosition && area) {
+        const pos = normalizedToClient(x, y, area);
+        presenterUI.updateLaserPointerPosition(pos.x, pos.y, true);
+      }
     } else {
       sendPointerUpdate(0, 0, false);
+      // Overlay is hidden via updateLaserPointerStatus below
     }
     const presenterUI = (window as any).__presenterUI;
     if (presenterUI?.updateLaserPointerStatus) {
