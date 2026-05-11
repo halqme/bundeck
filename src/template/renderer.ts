@@ -118,7 +118,10 @@ export class HTMLRenderer {
       try {
         return await Bun.file(this.resolve(filepath)).text();
       } catch (e) {
-        console.warn("Failed to load " + label + " stylesheet (" + filepath + "):", (e as Error).message);
+        console.warn(
+          "Failed to load " + label + " stylesheet (" + filepath + "):",
+          (e as Error).message,
+        );
         return "";
       }
     };
@@ -129,7 +132,7 @@ export class HTMLRenderer {
       theme in themes && themes[theme as keyof typeof themes]
         ? themes[theme as keyof typeof themes]
         : themes.default;
-    const themeUsed = await readFileSafe(themePath, "theme \"" + theme + "\"");
+    const themeUsed = await readFileSafe(themePath, 'theme "' + theme + '"');
 
     const printCss = await readFileSafe(styles.print, "print");
 
@@ -156,14 +159,30 @@ export class HTMLRenderer {
     const contentHtml = this.markedInstance.parser(slide.contentTokens);
     let notesHtml = "";
     if (slide.noteTokens && slide.noteTokens.length > 0) {
-      notesHtml = "<div class=\"speaker-notes\" hidden>" + this.markedInstance.parser(slide.noteTokens) + "</div>";
+      notesHtml =
+        '<div class="speaker-notes" hidden>' +
+        this.markedInstance.parser(slide.noteTokens) +
+        "</div>";
     }
 
     const contentLength = slide.contentLength ?? 0;
     const fontSizeAttr = getSlideFontSizeAttribute(contentLength);
     const activeClass = isFirst ? " active" : "";
 
-    return "<section class=\"slide" + activeClass + "\" id=\"slide-" + slide.id + "\" data-id=\"" + slide.id + "\" style=\"" + fontSizeAttr + "\">" + contentHtml + notesHtml + "</section>";
+    return (
+      '<section class="slide' +
+      activeClass +
+      '" id="slide-' +
+      slide.id +
+      '" data-id="' +
+      slide.id +
+      '" style="' +
+      fontSizeAttr +
+      '">' +
+      contentHtml +
+      notesHtml +
+      "</section>"
+    );
   }
 
   private buildHTML(
@@ -223,7 +242,15 @@ export class HTMLRenderer {
       .map(([property, value]) => property + ": " + value + ";")
       .join(" ");
 
-    const inlineStyles = ":root { " + aspectRatioStyles + " }" + assets.themeUsed + assets.mainCss + assets.viewUiCss + assets.presenterCss + assets.printCss;
+    const inlineStyles =
+      ":root { " +
+      aspectRatioStyles +
+      " }" +
+      assets.themeUsed +
+      assets.mainCss +
+      assets.viewUiCss +
+      assets.presenterCss +
+      assets.printCss;
 
     return this.createHTMLTemplate({
       config,
@@ -248,10 +275,15 @@ export class HTMLRenderer {
       .join(" ");
 
     const presenterLink = this.includePresenterAssets
-      ? "<link rel=\"stylesheet\" href=\"/assets/presenter.css\">"
+      ? '<link rel="stylesheet" href="/assets/presenter.css">'
       : "";
 
-    const headContent = "<style>:root { " + aspectRatioStyles + " }</style><link rel=\"stylesheet\" href=\"/assets/theme.css\"><link rel=\"stylesheet\" href=\"/assets/styles.css\"><link rel=\"stylesheet\" href=\"/assets/view-ui.css\">" + presenterLink + "<link rel=\"stylesheet\" href=\"/assets/print.css\" media=\"print\">";
+    const headContent =
+      "<style>:root { " +
+      aspectRatioStyles +
+      ' }</style><link rel="stylesheet" href="/assets/theme.css"><link rel="stylesheet" href="/assets/styles.css"><link rel="stylesheet" href="/assets/view-ui.css">' +
+      presenterLink +
+      '<link rel="stylesheet" href="/assets/print.css" media="print">';
 
     const html = this.createHTMLTemplate({
       config,
@@ -287,13 +319,29 @@ export class HTMLRenderer {
     headContent: string;
     bodyContent: string;
   }): string {
-    const bodyClass = config.fontSize ? " class=\"" + config.fontSize + "\"" : "";
+    const bodyClass = config.fontSize ? ' class="' + config.fontSize + '"' : "";
 
-    return "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><title>" + config.title + "</title>" + headContent + "</head><body" + bodyClass + ">" + bodyContent + "</body></html>";
+    return (
+      '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' +
+      config.title +
+      "</title>" +
+      headContent +
+      "</head><body" +
+      bodyClass +
+      ">" +
+      bodyContent +
+      "</body></html>"
+    );
   }
 
   private buildBodyContent(slidesHtml: string, runtimeScript: string): string {
-    return "<div class=\"slide-viewport\"><div id=\"slide-container\">" + slidesHtml + "</div></div><script>" + runtimeScript + "</script>";
+    return (
+      '<div class="slide-viewport"><div id="slide-container">' +
+      slidesHtml +
+      "</div></div><script>" +
+      runtimeScript +
+      "</script>"
+    );
   }
 
   private processFinalHTML(html: string): string {

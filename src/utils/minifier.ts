@@ -31,12 +31,12 @@ export class HTMLMinifier {
     const preserved = html.replace(protectedTags, (match, tag, attrs, content) => {
       const tagName = tag.toLowerCase();
       let cleanedContent = content;
-      
+
       // script/style の場合は中身の前後空白を削る
       if (tagName === "script" || tagName === "style") {
         cleanedContent = content.trim();
       }
-      
+
       const reconstructed = "<" + tag + attrs + ">" + cleanedContent + "</" + tag + ">";
       placeholders.push(reconstructed);
       return "__BUN_PRESERVE_" + (placeholders.length - 1) + "__";
@@ -56,7 +56,10 @@ export class HTMLMinifier {
       .replace(/__BUN_PRESERVE_(\d+)__\s+</g, "__BUN_PRESERVE_$1__<")
       .replace(/>\s+__BUN_PRESERVE_(\d+)__/g, ">__BUN_PRESERVE_$1__")
       // プレースホルダー同士が隣接する場合の空白も削除
-      .replace(/__BUN_PRESERVE_(\d+)__\s+__BUN_PRESERVE_(\d+)__/g, "__BUN_PRESERVE_$1____BUN_PRESERVE_$2__")
+      .replace(
+        /__BUN_PRESERVE_(\d+)__\s+__BUN_PRESERVE_(\d+)__/g,
+        "__BUN_PRESERVE_$1____BUN_PRESERVE_$2__",
+      )
       .trim();
 
     // プレースホルダーを元に戻す

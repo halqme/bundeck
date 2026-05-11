@@ -52,8 +52,11 @@ describe("HTMLMinifier", () => {
     });
 
     test("should preserve content in <script> tags but trim ends", () => {
-      const input = "<div><script>\n  const x = 1;\n  if (x > 0) {\n    console.log(x);\n  }\n</script></div>";
-      expect(minifier.minify(input)).toBe("<div><script>const x = 1;\n  if (x > 0) {\n    console.log(x);\n  }</script></div>");
+      const input =
+        "<div><script>\n  const x = 1;\n  if (x > 0) {\n    console.log(x);\n  }\n</script></div>";
+      expect(minifier.minify(input)).toBe(
+        "<div><script>const x = 1;\n  if (x > 0) {\n    console.log(x);\n  }</script></div>",
+      );
     });
 
     test("should trim whitespace", () => {
@@ -62,8 +65,10 @@ describe("HTMLMinifier", () => {
     });
 
     test("should handle complex html structure", () => {
-      const input = "\n        <div class=\"container\">\n          <!-- header -->\n          <header>\n            <h1>Title</h1>\n          </header>\n          <main>\n            <p>Some text with <span>inline</span> element.</p>\n            <pre>\n              code block\n            </pre>\n          </main>\n        </div>\n      ";
-      const expected = '<div class="container"><header><h1>Title</h1></header><main><p>Some text with <span>inline</span> element.</p><pre>\n              code block\n            </pre></main></div>';
+      const input =
+        '\n        <div class="container">\n          <!-- header -->\n          <header>\n            <h1>Title</h1>\n          </header>\n          <main>\n            <p>Some text with <span>inline</span> element.</p>\n            <pre>\n              code block\n            </pre>\n          </main>\n        </div>\n      ';
+      const expected =
+        '<div class="container"><header><h1>Title</h1></header><main><p>Some text with <span>inline</span> element.</p><pre>\n              code block\n            </pre></main></div>';
       expect(minifier.minify(input)).toBe(expected);
     });
   });
