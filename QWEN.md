@@ -98,7 +98,7 @@ Presentations are written in Markdown with optional frontmatter metadata:
 ---
 title: My Presentation Title
 theme: default
-aspectRatio: 16/9
+aspectRatio: 16:9
 fontSize: M
 ---
 

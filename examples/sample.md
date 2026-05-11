@@ -2,7 +2,7 @@
 title: Slide Bun 機能紹介
 author: Slide Bun 開発チーム
 theme: default
-aspectRatio: 16/9
+aspectRatio: 16:9
 fontSize: M
 ---
 

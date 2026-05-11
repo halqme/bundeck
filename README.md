@@ -93,7 +93,7 @@ Configure your slide deck using YAML frontmatter at the top of your file.
 title: My Awesome Presentation
 author: Me
 theme: default
-aspectRatio: 16/9
+aspectRatio: 16:9
 fontSize: M
 ```
 

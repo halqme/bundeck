@@ -14,7 +14,7 @@
 export const SLIDE_SIZE = {
   width: 1280,
   height: 720,
-  aspectRatio: "16/9",
+  aspectRatio: "16:9",
 } as const;
 
 /** コンテンツ量に基づくフォントサイズカテゴリ */
