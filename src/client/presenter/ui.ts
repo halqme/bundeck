@@ -1,7 +1,6 @@
-import { presenterStyles } from "./styles";
-
 export class PresenterUI {
   private container: HTMLElement;
+  private slideFrameContainer: HTMLElement;
   private currentFrame: HTMLIFrameElement;
   private nextFrame: HTMLIFrameElement;
   private notesContainer: HTMLElement;
@@ -9,10 +8,13 @@ export class PresenterUI {
   private timerElement: HTMLElement;
   private slideInfoElement: HTMLElement;
   private progressBarElement: HTMLElement;
+  private cursorOverlay: HTMLElement;
   private startTime: number;
-  private timerInterval: number | null = null;
   private isPaused: boolean = false;
   private pausedTime: number = 0;
+  private slideW: number = 1280;
+  private slideH: number = 720;
+  private resizeObserver: ResizeObserver | null = null;
 
   constructor() {
     this.container = document.createElement("div");
@@ -86,8 +88,16 @@ export class PresenterUI {
     // Current Slide
     const currentView = document.createElement("div");
     currentView.id = "presenter-current";
+
+    // Aspect-ratio container for the iframe — constrains iframe to slide ratio
+    this.slideFrameContainer = document.createElement("div");
+
     this.currentFrame = document.createElement("iframe");
     // Initial src is empty to avoid race condition with hash update
+
+    this.slideFrameContainer.appendChild(this.currentFrame);
+    this.slideFrameContainer.id = "slide-frame-container";
+    currentView.appendChild(this.slideFrameContainer);
 
     // Slide controls container
     const slideControls = document.createElement("div");
@@ -123,7 +133,7 @@ export class PresenterUI {
     laserSlideBtn.onclick = (e) => {
       e.stopPropagation();
       if ((window as any).__togglePresenterPointer) {
-        (window as any).__togglePresenterPointer();
+        (window as any).__togglePresenterPointer(e.clientX, e.clientY);
       }
     };
 
@@ -144,7 +154,6 @@ export class PresenterUI {
     slideControls.appendChild(laserSlideBtn);
     slideControls.appendChild(openViewBtn);
 
-    currentView.appendChild(this.currentFrame);
     currentView.appendChild(slideControls);
 
     // Next Slide
@@ -167,30 +176,75 @@ export class PresenterUI {
     this.container.appendChild(nextView);
     this.container.appendChild(this.notesContainer);
 
+    // Laser pointer cursor overlay
+    this.cursorOverlay = document.createElement("div");
+    this.cursorOverlay.id = "presenter-cursor";
+    this.container.appendChild(this.cursorOverlay);
+
     this.startTime = Date.now();
+
+    // Read slide dimensions from CSS custom properties
+    // (injected at build time from the markdown file's frontmatter)
+    const root = document.documentElement;
+    const computed = getComputedStyle(root);
+    this.slideW = parseInt(computed.getPropertyValue("--slide-width") || "1280");
+    this.slideH = parseInt(computed.getPropertyValue("--slide-height") || "720");
   }
 
   public mount() {
-    // Inject styles
-    const style = document.createElement("style");
-    style.textContent = presenterStyles;
-    document.head.appendChild(style);
-
     // Clear body and append dashboard
     document.body.innerHTML = "";
     document.body.appendChild(this.container);
     document.body.classList.add("mode-presenter");
 
     this.startClock();
-    this.startTimer();
 
     // Focus to capture keyboard events immediately
     this.container.focus();
+
+    // Size the slide frame to fit the container while maintaining aspect ratio
+    this.fitSlideFrame();
+
+    // Watch for viewport / layout changes
+    this.resizeObserver = new ResizeObserver(() => this.fitSlideFrame());
+    this.resizeObserver.observe(this.slideFrameContainer.parentElement!);
 
     // Verify iframes were created (they are populated later by updateViews)
     if (!this.currentFrame || !this.nextFrame) {
       console.warn("Presenter UI mounted but iframe elements are missing");
     }
+  }
+
+  /**
+   * Calculate and set the slide frame container's width and height so it fits
+   * within the available space (#presenter-current minus controls) while
+   * maintaining the slide's intrinsic aspect ratio from the markdown file.
+   */
+  private fitSlideFrame() {
+    const parent = this.slideFrameContainer.parentElement;
+    const controls = document.getElementById("presenter-slide-controls");
+    if (!parent || !controls) return;
+
+    const availW = parent.clientWidth;
+    const availH = parent.clientHeight - controls.offsetHeight;
+
+    if (availW <= 0 || availH <= 0) return;
+
+    const ratio = this.slideW / this.slideH;
+
+    let w: number, h: number;
+    if (availW / availH > ratio) {
+      // Container is wider than slide → constrained by height
+      h = availH;
+      w = h * ratio;
+    } else {
+      // Container is taller than slide → constrained by width
+      w = availW;
+      h = w / ratio;
+    }
+
+    this.slideFrameContainer.style.width = `${Math.round(w)}px`;
+    this.slideFrameContainer.style.height = `${Math.round(h)}px`;
   }
 
   public updateViews(currentIndex: number, totalSlides: number) {
@@ -247,19 +301,6 @@ export class PresenterUI {
     }, 1000);
   }
 
-  private startTimer() {
-    this.timerInterval = window.setInterval(() => {
-      if (this.isPaused) return;
-
-      const now = Date.now();
-      const diff = now - this.startTime;
-      const minutes = Math.floor(diff / 60000);
-      const seconds = Math.floor((diff % 60000) / 1000);
-
-      this.timerElement.textContent = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-    }, 1000);
-  }
-
   private resetTimer() {
     this.startTime = Date.now();
     this.pausedTime = 0;
@@ -292,5 +333,30 @@ export class PresenterUI {
         laserSlideBtn.classList.remove("active");
       }
     }
+
+    if (!active) {
+      // Cursor and overlay must be explicitly hidden when laser is toggled OFF
+      // (mousemove might not fire if the pointer hasn't moved since the toggle)
+      this.slideFrameContainer.style.cursor = "";
+      this.cursorOverlay.classList.remove("active");
+    }
+  }
+
+  /**
+   * Update the laser pointer cursor overlay position on the presenter's screen.
+   * Called from runtime-server.ts with viewport-relative pixel coordinates.
+   * Hides the default cursor only when laser is active AND over the slide area
+   * — applied inline on the wrapper element so cursor:none never leaks to
+   * the controls area or letterbox gaps.
+   */
+  public updateLaserPointerPosition(x: number, y: number, active: boolean) {
+    this.cursorOverlay.style.left = `${x}px`;
+    this.cursorOverlay.style.top = `${y}px`;
+    this.cursorOverlay.classList.toggle("active", active);
+
+    // Hide cursor only when over the valid slide area AND laser is on.
+    // Inline style ensures cursor:none is confined to the wrapper element;
+    // controls, notes, and header keep their normal cursor at all times.
+    this.slideFrameContainer.style.cursor = active ? "none" : "";
   }
 }

@@ -23,23 +23,37 @@ export class HTMLRenderer {
   private minifier: HTMLMinifier;
   private enableMinify: boolean;
   private inlineAssets: boolean;
+  private includePresenterAssets: boolean;
 
-  constructor(options: { enableMinify?: boolean; inlineAssets?: boolean } = {}) {
+  constructor(
+    options: {
+      enableMinify?: boolean;
+      inlineAssets?: boolean;
+      includePresenterAssets?: boolean;
+    } = {},
+  ) {
     this.enableMinify = options.enableMinify ?? false;
     this.inlineAssets = options.inlineAssets ?? true;
+    this.includePresenterAssets = options.includePresenterAssets ?? false;
     this.markedInstance = this.createMarkedInstance();
     this.minifier = new HTMLMinifier();
   }
 
-  /**
-   * When inlineAssets is true this returns a string of full HTML.
-   * When inlineAssets is false this returns an object containing html and assets (CSS) kept in memory
-   */
   async generate(
     presentation: Presentation,
     runtimeScriptContent: string,
   ): Promise<
-    string | { html: string; assets: { mainCss: string; printCss: string; themeCss: string } }
+    | string
+    | {
+        html: string;
+        assets: {
+          mainCss: string;
+          printCss: string;
+          themeCss: string;
+          viewUiCss: string;
+          presenterCss: string;
+        };
+      }
   > {
     const { slides, meta } = presentation;
     const config = this.extractConfig(meta);
@@ -63,7 +77,6 @@ export class HTMLRenderer {
       renderer: {
         paragraph(token) {
           const tokens = token.tokens || [];
-          // Check if paragraph contains only images (standard or styled) and optional whitespace
           const isOnlyImages = tokens.every(
             (t) =>
               t.type === "image" ||
@@ -77,7 +90,7 @@ export class HTMLRenderer {
             return this.parser.parseInline(tokens) + "\n";
           }
 
-          return `<p>${this.parser.parseInline(tokens)}</p>\n`;
+          return "<p>" + this.parser.parseInline(tokens) + "</p>\n";
         },
       },
     });
@@ -93,7 +106,7 @@ export class HTMLRenderer {
     return {
       title: meta.title ?? DEFAULT_TITLE,
       theme: meta.theme ?? DEFAULT_THEME,
-      fontSize: meta.fontSize ? `font-size-${meta.fontSize.toLowerCase()}` : "",
+      fontSize: meta.fontSize ? "font-size-" + meta.fontSize.toLowerCase() : "",
       aspectRatioCSS: generateAspectRatioCSSVariables(meta.aspectRatio),
     };
   }
@@ -105,7 +118,10 @@ export class HTMLRenderer {
       try {
         return await Bun.file(this.resolve(filepath)).text();
       } catch (e) {
-        console.warn(`Failed to load ${label} stylesheet (${filepath}):`, (e as Error).message);
+        console.warn(
+          "Failed to load " + label + " stylesheet (" + filepath + "):",
+          (e as Error).message,
+        );
         return "";
       }
     };
@@ -116,14 +132,22 @@ export class HTMLRenderer {
       theme in themes && themes[theme as keyof typeof themes]
         ? themes[theme as keyof typeof themes]
         : themes.default;
-    const themeUsed = await readFileSafe(themePath, `theme "${theme}"`);
+    const themeUsed = await readFileSafe(themePath, 'theme "' + theme + '"');
 
     const printCss = await readFileSafe(styles.print, "print");
+
+    const viewUiCss = await readFileSafe(styles.viewUi, "view-ui");
+
+    const presenterCss = this.includePresenterAssets
+      ? await readFileSafe(styles.presenter, "presenter")
+      : "";
 
     return {
       mainCss,
       printCss,
       themeUsed,
+      viewUiCss,
+      presenterCss,
     };
   }
 
@@ -133,26 +157,32 @@ export class HTMLRenderer {
 
   private renderSlide(slide: Presentation["slides"][0], isFirst: boolean = false): string {
     const contentHtml = this.markedInstance.parser(slide.contentTokens);
-
-    // Render speaker notes if available
     let notesHtml = "";
     if (slide.noteTokens && slide.noteTokens.length > 0) {
-      notesHtml = `<div class="speaker-notes" hidden>${this.markedInstance.parser(slide.noteTokens)}</div>`;
+      notesHtml =
+        '<div class="speaker-notes" hidden>' +
+        this.markedInstance.parser(slide.noteTokens) +
+        "</div>";
     }
 
-    // Calculate font-size based on content length
     const contentLength = slide.contentLength ?? 0;
     const fontSizeAttr = getSlideFontSizeAttribute(contentLength);
-
-    // Add active class to the first slide
     const activeClass = isFirst ? " active" : "";
 
-    return `
-    <section class="slide${activeClass}" id="slide-${slide.id}" data-id="${slide.id}" style="${fontSizeAttr}">
-      ${contentHtml}
-      ${notesHtml}
-    </section>
-    `.trim();
+    return (
+      '<section class="slide' +
+      activeClass +
+      '" id="slide-' +
+      slide.id +
+      '" data-id="' +
+      slide.id +
+      '" style="' +
+      fontSizeAttr +
+      '">' +
+      contentHtml +
+      notesHtml +
+      "</section>"
+    );
   }
 
   private buildHTML(
@@ -165,22 +195,35 @@ export class HTMLRenderer {
     assets: Awaited<ReturnType<typeof this.loadAssets>>,
     slidesHtml: string,
     runtimeScript: string,
-  ): string | { html: string; assets: { mainCss: string; printCss: string; themeCss: string } } {
-    const minifiedAssets = this.minifyAssets(assets);
+  ):
+    | string
+    | {
+        html: string;
+        assets: {
+          mainCss: string;
+          printCss: string;
+          themeCss: string;
+          viewUiCss: string;
+          presenterCss: string;
+        };
+      } {
+    const processedAssets = this.enableMinify ? this.minifyAssets(assets) : assets;
 
     if (this.inlineAssets) {
-      const html = this.buildInlineHTML(config, minifiedAssets, slidesHtml, runtimeScript);
+      const html = this.buildInlineHTML(config, processedAssets, slidesHtml, runtimeScript);
       return this.processFinalHTML(html);
     }
 
-    return this.buildExternalHTML(config, minifiedAssets, slidesHtml, runtimeScript);
+    return this.buildExternalHTML(config, processedAssets, slidesHtml, runtimeScript);
   }
 
   private minifyAssets(assets: Awaited<ReturnType<typeof this.loadAssets>>) {
     return {
-      themeCss: this.minifier.minifyCSS(assets.themeUsed),
+      themeUsed: this.minifier.minifyCSS(assets.themeUsed),
       mainCss: this.minifier.minifyCSS(assets.mainCss),
       printCss: this.minifier.minifyCSS(assets.printCss),
+      viewUiCss: this.minifier.minifyCSS(assets.viewUiCss),
+      presenterCss: this.minifier.minifyCSS(assets.presenterCss),
     };
   }
 
@@ -191,19 +234,27 @@ export class HTMLRenderer {
       fontSize: string;
       aspectRatioCSS: Record<string, string>;
     },
-    minifiedAssets: ReturnType<typeof this.minifyAssets>,
+    assets: Awaited<ReturnType<typeof this.loadAssets>>,
     slidesHtml: string,
     runtimeScript: string,
   ): string {
     const aspectRatioStyles = Object.entries(config.aspectRatioCSS)
-      .map(([property, value]) => `${property}: ${value};`)
+      .map(([property, value]) => property + ": " + value + ";")
       .join(" ");
 
-    const inlineStyles = `:root { ${aspectRatioStyles} }\n${minifiedAssets.themeCss}${minifiedAssets.mainCss}${minifiedAssets.printCss}`;
+    const inlineStyles =
+      ":root { " +
+      aspectRatioStyles +
+      " }" +
+      assets.themeUsed +
+      assets.mainCss +
+      assets.viewUiCss +
+      assets.presenterCss +
+      assets.printCss;
 
     return this.createHTMLTemplate({
       config,
-      headContent: `<style>${inlineStyles}</style>`,
+      headContent: "<style>" + inlineStyles + "</style>",
       bodyContent: this.buildBodyContent(slidesHtml, runtimeScript),
     });
   }
@@ -215,22 +266,24 @@ export class HTMLRenderer {
       fontSize: string;
       aspectRatioCSS: Record<string, string>;
     },
-    minifiedAssets: ReturnType<typeof this.minifyAssets>,
+    assets: Awaited<ReturnType<typeof this.loadAssets>>,
     slidesHtml: string,
     runtimeScript: string,
   ) {
     const aspectRatioStyles = Object.entries(config.aspectRatioCSS)
-      .map(([property, value]) => `${property}: ${value};`)
+      .map(([property, value]) => property + ": " + value + ";")
       .join(" ");
 
-    const headContent = `
-      <style>
-        :root { ${aspectRatioStyles} }
-      </style>
-      <link rel="stylesheet" href="/assets/styles.css">
-      <link rel="stylesheet" href="/assets/theme.css">
-      <link rel="stylesheet" href="/assets/print.css" media="print">
-    `.trim();
+    const presenterLink = this.includePresenterAssets
+      ? '<link rel="stylesheet" href="/assets/presenter.css">'
+      : "";
+
+    const headContent =
+      "<style>:root { " +
+      aspectRatioStyles +
+      ' }</style><link rel="stylesheet" href="/assets/theme.css"><link rel="stylesheet" href="/assets/styles.css"><link rel="stylesheet" href="/assets/view-ui.css">' +
+      presenterLink +
+      '<link rel="stylesheet" href="/assets/print.css" media="print">';
 
     const html = this.createHTMLTemplate({
       config,
@@ -242,7 +295,13 @@ export class HTMLRenderer {
 
     return {
       html: processedHTML,
-      assets: minifiedAssets,
+      assets: {
+        mainCss: assets.mainCss,
+        printCss: assets.printCss,
+        themeCss: assets.themeUsed,
+        viewUiCss: assets.viewUiCss,
+        presenterCss: assets.presenterCss,
+      },
     };
   }
 
@@ -260,38 +319,35 @@ export class HTMLRenderer {
     headContent: string;
     bodyContent: string;
   }): string {
-    const bodyClass = config.fontSize ? ` class="${config.fontSize}"` : "";
+    const bodyClass = config.fontSize ? ' class="' + config.fontSize + '"' : "";
 
-    return `<!DOCTYPE html>
-      <html lang="en">
-      <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${config.title}</title>
-      ${headContent}
-      </head>
-      <body${bodyClass}>
-      ${bodyContent}
-      </body>
-      </html>`;
+    return (
+      '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' +
+      config.title +
+      "</title>" +
+      headContent +
+      "</head><body" +
+      bodyClass +
+      ">" +
+      bodyContent +
+      "</body></html>"
+    );
   }
 
   private buildBodyContent(slidesHtml: string, runtimeScript: string): string {
-    return `<div class="slide-viewport">
-      <div id="slide-container">
-      ${slidesHtml}
-      </div>
-      </div>
-      <script>
-      ${runtimeScript}
-      </script>`;
+    return (
+      '<div class="slide-viewport"><div id="slide-container">' +
+      slidesHtml +
+      "</div></div><script>" +
+      runtimeScript +
+      "</script>"
+    );
   }
 
   private processFinalHTML(html: string): string {
-    // 常にHTMLコメントを削除（minify設定に関わらず）
-    const withoutComments = this.minifier.removeComments(html).replace(/^(\s+|\t)/gm, "");
-
-    // minifyが有効な場合は最終的なHTMLを最小化
-    return this.enableMinify ? this.minifier.minify(withoutComments) : withoutComments;
+    if (this.enableMinify) {
+      return this.minifier.minify(html);
+    }
+    return this.minifier.removeComments(html);
   }
 }

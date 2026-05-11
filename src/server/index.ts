@@ -12,7 +12,13 @@ export async function startServer(inputPath: string, port: number) {
   // State
   let currentHTML = "";
   // assets kept in memory when serve mode externalizes CSS
-  let assetsMemory: { mainCss: string; printCss: string; themeCss: string } | null = null;
+  let assetsMemory: {
+    mainCss: string;
+    printCss: string;
+    themeCss: string;
+    viewUiCss: string;
+    presenterCss: string;
+  } | null = null;
   let presentation = await loadPresentation(absoluteInputPath);
   const initial = await generator.generate(presentation);
   if (typeof initial === "string") {
@@ -107,16 +113,32 @@ export async function startServer(inputPath: string, port: number) {
         return new Response("Not Found", { status: 404 });
       }
 
-      if (url.pathname === "/assets/print.css") {
-        if (assetsMemory?.printCss) {
-          return new Response(assetsMemory.printCss, { headers: { "Content-Type": "text/css" } });
+      if (url.pathname === "/assets/theme.css") {
+        if (assetsMemory?.themeCss) {
+          return new Response(assetsMemory.themeCss, { headers: { "Content-Type": "text/css" } });
         }
         return new Response("Not Found", { status: 404 });
       }
 
-      if (url.pathname === "/assets/theme.css") {
+      if (url.pathname === "/assets/view-ui.css") {
+        if (assetsMemory?.viewUiCss) {
+          return new Response(assetsMemory.viewUiCss, { headers: { "Content-Type": "text/css" } });
+        }
+        return new Response("Not Found", { status: 404 });
+      }
+
+      if (url.pathname === "/assets/presenter.css") {
+        if (assetsMemory?.presenterCss) {
+          return new Response(assetsMemory.presenterCss, {
+            headers: { "Content-Type": "text/css" },
+          });
+        }
+        return new Response("Not Found", { status: 404 });
+      }
+
+      if (url.pathname === "/assets/print.css") {
         if (assetsMemory?.printCss) {
-          return new Response(assetsMemory.themeCss, { headers: { "Content-Type": "text/css" } });
+          return new Response(assetsMemory.printCss, { headers: { "Content-Type": "text/css" } });
         }
         return new Response("Not Found", { status: 404 });
       }

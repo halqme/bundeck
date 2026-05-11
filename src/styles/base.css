@@ -370,7 +370,7 @@ tbody tr:last-child td {
   display: block;
 }
 
-img .fit {
+img.fit {
   max-width: 100%;
   object-fit: contain;
   display: block;

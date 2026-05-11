@@ -39,7 +39,7 @@ export async function build(inputPath: string, options: CLIOptions): Promise<str
     const buildResult = await Bun.build({
       entrypoints: ["src/client/runtime-view.ts"],
       target: "browser",
-      minify: true,
+      minify: options.minify,
     });
 
     if (!buildResult.success || buildResult.outputs.length === 0) {
