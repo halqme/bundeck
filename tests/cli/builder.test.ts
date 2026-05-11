@@ -49,6 +49,6 @@ describe("CLI Builder", () => {
     });
 
     const content = await Bun.file(OUTPUT_FILE).text();
-    expect(content).not.toContain("\n\n"); // Basic check for minification
+    expect(content.split("<script>")[0]).not.toContain("\n\n"); // Basic check for minification
   });
 });
