@@ -1,5 +1,3 @@
-import { presenterStyles } from "./styles";
-
 export class PresenterUI {
   private container: HTMLElement;
   private currentFrame: HTMLIFrameElement;
@@ -171,11 +169,6 @@ export class PresenterUI {
   }
 
   public mount() {
-    // Inject styles
-    const style = document.createElement("style");
-    style.textContent = presenterStyles;
-    document.head.appendChild(style);
-
     // Clear body and append dashboard
     document.body.innerHTML = "";
     document.body.appendChild(this.container);
