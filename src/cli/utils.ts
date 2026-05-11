@@ -1,5 +1,95 @@
 import { resolve, basename, extname, dirname } from "path";
-import { existsSync, mkdirSync } from "fs";
+import { existsSync, mkdirSync, appendFileSync } from "fs";
+
+// ANSIカラーコード
+const colors = {
+  reset: "\x1b[0m",
+  red: "\x1b[31m",
+  green: "\x1b[32m",
+  yellow: "\x1b[33m",
+  blue: "\x1b[34m",
+  cyan: "\x1b[36m",
+  bold: "\x1b[1m",
+  dim: "\x1b[2m",
+};
+
+let logFilePath: string | null = null;
+
+/**
+ * ログファイルのパスを設定
+ */
+export function setLogFilePath(path: string): void {
+  logFilePath = path;
+}
+
+/**
+ * ファイルにログを書き込む
+ */
+function writeToLogFile(message: string, level: "error" | "warn" | "info"): void {
+  if (!logFilePath) return;
+  const timestamp = new Date().toISOString();
+  const logEntry = `[${timestamp}] [${level.toUpperCase()}] ${message}\n`;
+  try {
+    appendFileSync(logFilePath, logEntry, { encoding: "utf-8" });
+  } catch {
+    // ログファイルへの書き込みに失敗した場合は無視
+  }
+}
+
+/**
+ * カラー付きコンソール出力 - エラー
+ */
+export function consoleError(message: string, details?: string): void {
+  const fullMessage = details
+    ? `${colors.red}${colors.bold}Error:${colors.reset} ${message}\n${colors.dim}→ ${details}${colors.reset}`
+    : `${colors.red}${colors.bold}Error:${colors.reset} ${message}`;
+  console.error(fullMessage);
+  writeToLogFile(details ? `${message}: ${details}` : message, "error");
+}
+
+/**
+ * カラー付きコンソール出力 - 警告
+ */
+export function consoleWarn(message: string): void {
+  const fullMessage = `${colors.yellow}${colors.bold}Warning:${colors.reset} ${message}`;
+  console.warn(fullMessage);
+  writeToLogFile(message, "warn");
+}
+
+/**
+ * カラー付きコンソール出力 - 情報
+ */
+export function consoleInfo(message: string): void {
+  const fullMessage = `${colors.cyan}ℹ${colors.reset} ${message}`;
+  console.log(fullMessage);
+  writeToLogFile(message, "info");
+}
+
+/**
+ * カラー付きコンソール出力 - 成功
+ */
+export function consoleSuccess(message: string): void {
+  const fullMessage = `${colors.green}✓${colors.reset} ${message}`;
+  console.log(fullMessage);
+  writeToLogFile(message, "info");
+}
+
+/**
+ * エラー発生時のヘルプリンクを表示
+ */
+export function showFixSuggestion(errorCode: string): void {
+  const suggestions: Record<string, string> = {
+    FILE_NOT_FOUND: "ファイルが存在するか確認してください",
+    INVALID_OPTION: "正しいオプションか -h ヘルプを確認してください",
+    PARSE_ERROR: "Markdownの構文を確認してください",
+    BUILD_ERROR: "依存関係が正しいか確認してください",
+  };
+
+  const suggestion = suggestions[errorCode];
+  if (suggestion) {
+    console.log(`${colors.dim}💡 Hint: ${suggestion}${colors.reset}`);
+  }
+}
 
 export interface CLIOptions {
   outputPath?: string;
@@ -112,6 +202,11 @@ export function validateInputFile(inputPath: string): string {
 
   if (!existsSync(absInputPath)) {
     throw new Error(`File not found: ${inputPath}`);
+  }
+
+  const ext = extname(absInputPath).toLowerCase();
+  if (ext !== ".md" && ext !== ".markdown") {
+    consoleWarn(`Unexpected file extension "${ext}" — expected .md or .markdown`);
   }
 
   return absInputPath;

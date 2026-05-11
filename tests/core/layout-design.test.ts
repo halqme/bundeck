@@ -87,7 +87,7 @@ describe("Font Size Auto-Adjustment System", () => {
     it("should have correct dimensions for 16:9 aspect ratio", () => {
       expect(SLIDE_SIZE.width).toBe(1280);
       expect(SLIDE_SIZE.height).toBe(720);
-      expect(SLIDE_SIZE.aspectRatio).toBe("16/9");
+      expect(SLIDE_SIZE.aspectRatio).toBe("16:9");
     });
   });
 

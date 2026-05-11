@@ -1,11 +1,11 @@
-import { parseArguments, showHelp, type CLIOptions } from "./utils";
+import { parseArguments, showHelp, consoleError, consoleSuccess, consoleInfo } from "./utils";
 import { build } from "./builder";
 import { startServer } from "../server/index";
 
 export async function runCLI(args: string[]): Promise<string> {
   try {
     if (args.length === 0) {
-      console.log(showHelp());
+      consoleInfo(showHelp());
       process.exit(0);
     }
 
@@ -25,15 +25,15 @@ export async function runCLI(args: string[]): Promise<string> {
               port = parseInt(portStr, 10);
             }
           } else {
-            console.error("Error: --port requires a number");
+            consoleError("--portには数値を指定してください", "例: --port 8080");
             process.exit(1);
           }
         } else if (arg === "-h" || arg === "--help") {
-          console.log(`
+          consoleInfo(`
 slide-bun serve - Start development server
 
 Usage:
-  slide-bun serve <input.md> [options]
+  slide-bun serve <input.md> [Options]
 
 Options:
   -p, --port <number>    Set server port (default: 3000)
@@ -46,17 +46,18 @@ Options:
       }
 
       if (!inputPath) {
-        console.error("Error: Input file is required for serve");
+        consoleError("serveコマンドには入力ファイルが必要です", "slide-bun serve <input.md>");
         process.exit(1);
       }
 
+      consoleSuccess(`Starting server on port ${port}...`);
       await startServer(inputPath, port);
       return ""; // Server keeps running
     }
 
     // Check for version flag
     if (args.includes("--version") || args.includes("-v")) {
-      console.log("Slide Bun v0.0.1");
+      consoleInfo("Slide Bun v0.0.1");
       process.exit(0);
     }
 
@@ -64,19 +65,19 @@ Options:
     const { inputPath, options } = parseArguments(args);
 
     if (options.help) {
-      console.log(showHelp());
+      consoleInfo(showHelp());
       process.exit(0);
     }
 
     return build(inputPath, options).then((outPath) => {
       if (options.autoOpen) {
-        console.log("Opening...");
+        consoleInfo("Opening in browser...");
         Bun.spawn(["open", outPath]);
       }
       return outPath;
     });
   } catch (error) {
-    console.error(error);
+    consoleError("予期しないエラーが発生しました", (error as Error).message);
     process.exit(1);
   }
 }

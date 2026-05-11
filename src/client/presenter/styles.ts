@@ -193,6 +193,20 @@ body.mode-presenter {
   border-color: #f44;
 }
 
+#open-view-btn {
+  font-size: 18px;
+  margin-left: auto;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+#open-view-btn:hover {
+  opacity: 1;
+  background: #4fc3f7;
+  border-color: #4fc3f7;
+  color: #1a1a1a;
+}
+
 /* Side View: Next Slide */
 #presenter-next {
   grid-column: 2 / 3;

@@ -8,6 +8,7 @@ import {
 } from "./extensions";
 import { splitTokensToSlides } from "./splitter";
 import type { Presentation, PresentationMeta } from "../types";
+import { consoleWarn } from "../cli/utils";
 
 export class MarkdownParser {
   private markedInstance: Marked;
@@ -46,7 +47,7 @@ export class MarkdownParser {
         const data = (Bun.YAML.parse(yamlPart) as Record<string, any>) || {};
         return { data, content: contentPart };
       } catch (e) {
-        console.warn("Failed to parse YAML frontmatter:", e);
+        consoleWarn(`Failed to parse YAML frontmatter: ${(e as Error).message}`);
         return { data: {}, content: raw };
       }
     }
@@ -64,7 +65,14 @@ export class MarkdownParser {
     // 3. Split into slides
     const slides = splitTokensToSlides(tokens);
 
-    // 4. Construct Presentation object
+    // 4. Validate
+    if (slides.length === 0) {
+      consoleWarn(
+        "No slides were generated — the markdown may be empty or contain no slide separators (---).",
+      );
+    }
+
+    // 5. Construct Presentation object
     const meta: PresentationMeta = {
       title: data.title,
       theme: data.theme || "default",

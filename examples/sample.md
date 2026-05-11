@@ -2,7 +2,7 @@
 title: Slide Bun 機能紹介
 author: Slide Bun 開発チーム
 theme: default
-aspectRatio: 16/9
+aspectRatio: 16:9
 fontSize: M
 ---
 
@@ -122,8 +122,7 @@ slide.build("presentation.md");
 
 ## 🏁 まとめ
 
-Slide Bunを使えば、デザインに悩む時間を減らし、
-**「内容を伝えること」**に集中できます。
+Slide Bunを使えば、デザインに悩む時間を減らし、 **「内容を伝えること」** に集中できます。
 
 ### 次のステップ
 1. `slide-bun my-slides.md` でビルド

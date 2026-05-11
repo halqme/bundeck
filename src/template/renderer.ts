@@ -101,16 +101,24 @@ export class HTMLRenderer {
   private resolve = (filepath: string) => path.resolve(path.dirname(Bun.main), filepath);
 
   private async loadAssets(theme: string) {
-    const mainCss = await Bun.file(this.resolve(styles.base)).text();
+    const readFileSafe = async (filepath: string, label: string): Promise<string> => {
+      try {
+        return await Bun.file(this.resolve(filepath)).text();
+      } catch (e) {
+        console.warn(`Failed to load ${label} stylesheet (${filepath}):`, (e as Error).message);
+        return "";
+      }
+    };
 
-    // Theme Style (Fallback Default);
-    const themeUsed =
+    const mainCss = await readFileSafe(styles.base, "base");
+
+    const themePath =
       theme in themes && themes[theme as keyof typeof themes]
-        ? await Bun.file(this.resolve(themes[theme as keyof typeof themes])).text()
-        : await Bun.file(this.resolve(themes.default)).text();
+        ? themes[theme as keyof typeof themes]
+        : themes.default;
+    const themeUsed = await readFileSafe(themePath, `theme "${theme}"`);
 
-    // Style For export PDF
-    const printCss = await Bun.file(this.resolve(styles.print)).text();
+    const printCss = await readFileSafe(styles.print, "print");
 
     return {
       mainCss,

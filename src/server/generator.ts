@@ -1,5 +1,6 @@
 import { HTMLRenderer } from "../template/renderer";
 import type { Presentation } from "../types";
+import { consoleError } from "../cli/utils";
 
 export class ServerHTMLGenerator {
   private renderer: HTMLRenderer;
@@ -23,8 +24,11 @@ export class ServerHTMLGenerator {
     });
 
     if (!buildResult.success || buildResult.outputs.length === 0) {
-      console.error(buildResult.logs);
-      throw new Error("Failed to build client runtime");
+      const logDetail = buildResult.logs
+        .map((log) => (typeof log === "string" ? log : (log.message ?? JSON.stringify(log))))
+        .join("; ");
+      consoleError("Client runtime build failed", logDetail);
+      throw new Error(`Client runtime build failed: ${logDetail}`);
     }
 
     const runtimeJs = await buildResult.outputs[0]!.text();
