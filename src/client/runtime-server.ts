@@ -257,16 +257,17 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
     const area = computeSlideDisplayArea(frame.getBoundingClientRect(), slideWidth, slideHeight);
     const { x, y } = clientToNormalized(clientX, clientY, area);
     const valid = x >= 0 && x <= 1 && y >= 0 && y <= 1;
-    return { x, y, valid };
+    return { x, y, valid, area };
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    const { x, y, valid } = normalizePointer(e.clientX, e.clientY);
+    const { x, y, valid, area } = normalizePointer(e.clientX, e.clientY);
 
     // Update presenter's own cursor overlay
     const presenterUI = (window as any).__presenterUI;
-    if (presenterUI?.updateLaserPointerPosition) {
-      presenterUI.updateLaserPointerPosition(x, y, valid && isLaserPointerOn);
+    if (presenterUI?.updateLaserPointerPosition && area) {
+      const pos = normalizedToClient(x, y, area);
+      presenterUI.updateLaserPointerPosition(pos.x, pos.y, valid && isLaserPointerOn);
     }
 
     if (isLaserPointerOn && valid) {
