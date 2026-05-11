@@ -1,8 +1,8 @@
-# Slide Bun - Zero-Config Slide Generator
+# Bundeck - Zero-Config Slide Generator
 
 ## Project Overview
 
-Slide Bunは、Markdownファイルを美しくインタラクティブなHTMLプレゼンテーションに変換するゼロコンフィグレーションのスライドジェネレーターです。BunとTypeScriptで構築されており、馴染み深いMarkdown構文でコンテンツを記述し、最小限のセットアップでプロフェッショナルなスタイルのスライドを自動生成できます。
+Bundeckは、Markdownファイルを美しくインタラクティブなHTMLプレゼンテーションに変換するゼロコンフィグレーションのスライドジェネレーターです。BunとTypeScriptで構築されており、馴染み深いMarkdown構文でコンテンツを記述し、最小限のセットアップでプロフェッショナルなスタイルのスライドを自動生成できます。
 
 ### Key Features
 
@@ -72,22 +72,22 @@ bun run check
 
 ```bash
 # Build a presentation
-slide-bun presentation.md
+bundeck presentation.md
 
 # Build with custom output path
-slide-bun presentation.md -o slides.html
+bundeck presentation.md -o slides.html
 
 # Build with minification
-slide-bun presentation.md --minify
+bundeck presentation.md --minify
 
 # Build and auto-open in browser
-slide-bun presentation.md --auto-open
+bundeck presentation.md --auto-open
 
 # Start development server
-slide-bun serve presentation.md
+bundeck serve presentation.md
 
 # Start development server on custom port
-slide-bun serve presentation.md -p 8080
+bundeck serve presentation.md -p 8080
 ```
 
 ### Presentation Structure

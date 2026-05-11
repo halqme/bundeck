@@ -1,6 +1,6 @@
-# Slide Bun API Reference
+# Bundeck API Reference
 
-このドキュメントでは、Slide BunのパブリックAPIについて詳しく説明します。
+このドキュメントでは、BundeckのパブリックAPIについて詳しく説明します。
 
 ## 目次
 
@@ -43,7 +43,7 @@ async function generateSlides(
 **例:**
 
 ```typescript
-import { generateSlides } from "slide_bun";
+import { generateSlides } from "bundeck";
 
 const markdown = `
 # Hello World
@@ -82,7 +82,7 @@ async function parseSlides(markdown: string): Promise<Presentation>;
 **例:**
 
 ```typescript
-import { parseSlides } from "slide_bun";
+import { parseSlides } from "bundeck";
 
 const presentation = await parseSlides("# Title\n\nContent...");
 console.log(presentation.meta.title); // "Title"
@@ -114,7 +114,7 @@ function parseMarkdown(markdown: string): Presentation;
 **例:**
 
 ```typescript
-import { parseMarkdown } from "slide_bun";
+import { parseMarkdown } from "bundeck";
 
 const result = parseMarkdown("# Hello\n\n---\n\n# World");
 ```
@@ -226,7 +226,7 @@ async function runCLI(args: string[]): Promise<string>;
 
 ### カスタム拡張の使用
 
-Slide Bunは標準のMarkdown構文を拡張しています。
+Bundeckは標準のMarkdown構文を拡張しています。
 
 #### styledHeadingExtension
 
@@ -286,7 +286,7 @@ Speaker notes
 ### 基本的な使用方法
 
 ```typescript
-import { generateSlides } from "slide_bun";
+import { generateSlides } from "bundeck";
 
 const markdown = `
 ---
@@ -316,7 +316,7 @@ await Bun.write("presentation.html", html);
 ### 詳細な制御
 
 ```typescript
-import { parseSlides, generateHTML } from "slide_bun";
+import { parseSlides, generateHTML } from "bundeck";
 
 // パースのみ
 const presentation = await parseSlides(markdown);
@@ -342,7 +342,7 @@ const html = await generateSlides(markdown, {
 
 ## ベンチマーク
 
-Slide Bunのパフォーマンス特性:
+Bundeckのパフォーマンス特性:
 
 | シナリオ                         | 処理時間 |
 | -------------------------------- | -------- |
@@ -357,7 +357,7 @@ Slide Bunのパフォーマンス特性:
 
 ## エラーハンドリング
 
-Slide Bunはのエラーは色を付けてコンソールに表示されます:
+Bundeckはのエラーは色を付けてコンソールに表示されます:
 
 ```bash
 # エラーメッセージの例
@@ -369,7 +369,7 @@ Error: 入力ファイルが見つかりません
 ランタイムエラーはログファイルに記録されます。ログファイルパスを設定するには:
 
 ```typescript
-import { setLogFilePath } from "slide_bun/cli/utils";
+import { setLogFilePath } from "bundeck/cli/utils";
 
 setLogFilePath("./error.log");
 ```

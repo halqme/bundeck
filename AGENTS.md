@@ -33,8 +33,8 @@ These commands are the primary workflow for development, ensuring code quality a
 
 The project is a **Markdown‑to‑HTML slide generator** built with Bun and TypeScript. The main components are:
 
-1. **`src/client/runtime-view.ts`** – View-mode runtime for static builds (`slide-bun build`). Thin wrapper around `createViewRuntime()` + `setupViewUI()`.
-2. **`src/client/runtime-server.ts`** – Server-mode runtime for `slide-bun serve`. Handles both view mode and presenter mode dispatch via `window.location.pathname`.
+1. **`src/client/runtime-view.ts`** – View-mode runtime for static builds (`bundeck build`). Thin wrapper around `createViewRuntime()` + `setupViewUI()`.
+2. **`src/client/runtime-server.ts`** – Server-mode runtime for `bundeck serve`. Handles both view mode and presenter mode dispatch via `window.location.pathname`.
 3. **`src/client/core/`** – Shared browser-side modules:
    - `navigator.ts` – `SlideNavigator` class: slide transitions, text scaling, container transform.
    - `runtime-core.ts` – `createViewRuntime()`: wires up navigator, keyboard nav, hash routing, viewport scaling, and resize handling in one call.

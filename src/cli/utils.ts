@@ -149,11 +149,11 @@ export function parseArguments(args: string[]): { inputPath: string; options: CL
 
 export function showHelp(): string {
   return `
-slide-bun - Markdown to HTML slide generator
+bundeck - Markdown to HTML slide generator
 
 Usage:
-  slide-bun <input.md> [options]
-  slide-bun serve <input.md> [options]
+  bundeck <input.md> [options]
+  bundeck serve <input.md> [options]
 
 Commands:
   serve                  Start development server with HMR
@@ -169,9 +169,9 @@ Serve Options:
   -p, --port <number>    Set server port (default: 3000)
 
 Examples:
-  slide-bun presentation.md
-  slide-bun serve presentation.md
-  slide-bun presentation.md -o slides.html
+  bundeck presentation.md
+  bundeck serve presentation.md
+  bundeck presentation.md -o slides.html
 `;
 }
 

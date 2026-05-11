@@ -1,12 +1,12 @@
 ---
-title: Slide Bun 機能紹介
-author: Slide Bun 開発チーム
+title: Bundeck 機能紹介
+author: Bundeck 開発チーム
 theme: default
 aspectRatio: 16:9
 fontSize: M
 ---
 
-# Slide Bun {.center}
+# Bundeck {.center}
 
 **Zero-Config Slide Generator**
 Markdownを書くだけで、美しいスライドを自動生成します。
@@ -15,7 +15,7 @@ Markdownを書くだけで、美しいスライドを自動生成します。
 
 ::: speaker
 スライドの冒頭です。
-Slide Bunは設定不要で使い始められるスライド作成ツールです。
+Bundeckは設定不要で使い始められるスライド作成ツールです。
 :::
 
 ---
@@ -112,7 +112,7 @@ slide.build("presentation.md");
 
 データの比較やリストも標準のMarkdownテーブルで記述できます。
 
-| 機能 | Slide Bun | 他のツール |
+| 機能 | Bundeck | 他のツール |
 | :--- | :---: | :---: |
 | 設定の手間 | ゼロ | 必要 |
 | ビルド速度 | 爆速 | 普通 |
@@ -122,10 +122,10 @@ slide.build("presentation.md");
 
 ## 🏁 まとめ
 
-Slide Bunを使えば、デザインに悩む時間を減らし、 **「内容を伝えること」** に集中できます。
+Bundeckを使えば、デザインに悩む時間を減らし、 **「内容を伝えること」** に集中できます。
 
 ### 次のステップ
-1. `slide-bun my-slides.md` でビルド
-2. `slide-bun serve my-slides.md` でプレビュー
+1. `bundeck my-slides.md` でビルド
+2. `bundeck serve my-slides.md` でプレビュー
 
 [Happy Presenting!]{.mark} {.center}
