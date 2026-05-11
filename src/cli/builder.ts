@@ -37,14 +37,17 @@ export async function build(inputPath: string, options: CLIOptions): Promise<str
 
     // 2. Prepare Runtime (Static)
     const buildResult = await Bun.build({
-      entrypoints: ["src/client/runtime-static.ts"],
+      entrypoints: ["src/client/runtime-view.ts"],
       target: "browser",
       minify: true,
     });
 
     if (!buildResult.success || buildResult.outputs.length === 0) {
-      consoleError("Failed to build client runtime", JSON.stringify(buildResult.logs));
-      throw new Error("Failed to build client runtime");
+      const logDetail = buildResult.logs
+        .map((log) => (typeof log === "string" ? log : (log.message ?? JSON.stringify(log))))
+        .join("; ");
+      consoleError("Client runtime build failed", logDetail);
+      throw new Error(`Client runtime build failed: ${logDetail}`);
     }
 
     const runtimeJs = await buildResult.outputs[0]!.text();
