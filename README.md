@@ -1,6 +1,6 @@
 # Slide Bun 🐰
 
-**Zero-Config Slide Generator** - Write Markdown, get beautiful slides automatically.
+**Zero-Config Slide Generator** — Write Markdown, get beautiful HTML slides instantly.
 
 Slide Bun is a fast, zero-configuration presentation tool powered by [Bun](https://bun.sh/). It transforms your Markdown files into polished, responsive HTML slides with automatic layout adjustments.
 
@@ -11,6 +11,9 @@ Slide Bun is a fast, zero-configuration presentation tool powered by [Bun](https
 - **Fast Build**: Powered by Bun for incredible speed.
 - **Flexible Styling**: Support for CSS classes, columns, and custom attributes.
 - **Live Preview**: Built-in development server with live reload.
+- **Presenter Mode**: Full-featured presenter dashboard with slide notes, timer, laser pointer, and sync across devices.
+- **Context Menu**: Right-click on slides for quick navigation (first/last slide, go to slide number, open presenter mode).
+- **Hover Navigation**: Floating prev/next buttons appear on hover at the bottom-right corner.
 - **Zero Config**: Sensible defaults, just write and run.
 
 ## 📦 Installation
@@ -80,6 +83,29 @@ slide-bun serve presentation.md
 **Options:**
 
 - `-p, --port <number>`: Set server port (default: 3000)
+
+### Presenter Mode
+
+Start the server and open **`http://localhost:3000/presenter`** in your browser to access the presenter dashboard.
+
+Features available in presenter mode:
+
+- **Slide preview** — Current slide and next slide shown side-by-side
+- **Speaker notes** — Notes from `::: speaker` blocks displayed alongside slides
+- **Laser pointer** — Click the 🔴 button or press a key to activate; mouse movement is synced to the audience view in real-time
+- **Timer** — Track elapsed time with pause/reset controls
+- **Progress bar** — Visual indicator of presentation progress
+- **Open view mode** — Click the ↗ button to open a new tab with the audience view, synced via BroadcastChannel
+
+### View Mode UI
+
+Both the static build and server mode include in-viewport navigation:
+
+- **Hover navigation** — Move the mouse to the bottom-right corner to reveal `‹` and `›` buttons
+- **Context menu** — Right-click anywhere on a slide to access:
+  - Navigate to first / previous / next / last slide
+  - Jump to a specific slide number
+  - Open presenter mode in a new tab (server mode only)
 
 ## 📝 Markdown Syntax
 
@@ -227,15 +253,27 @@ Slide Bun is optimized for speed:
 ```
 slide_bun/
 ├── src/
-│   ├── cli/          # CLI tools
-│   ├── core/         # Core parsing logic
-│   ├── client/       # Browser runtime
-│   ├── server/       # Development server
-│   ├── template/     # HTML template
-│   └── types/        # TypeScript types
-├── tests/            # Test suites
-├── styles/          # CSS themes
-└── examples/        # Example presentations
+│   ├── cli/              # CLI tools
+│   ├── core/             # Core parsing and render logic
+│   │   ├── parser.ts     # Markdown → token stream (via marked)
+│   │   ├── splitter.ts   # Tokens → Slide[]
+│   │   └── extensions/   # Custom markdown syntax
+│   ├── client/           # Browser runtime
+│   │   ├── runtime-view.ts      # View mode entry (static build)
+│   │   ├── runtime-server.ts    # Server entry (view + presenter)
+│   │   ├── core/
+│   │   │   ├── navigator.ts     # Slide transitions & text scaling
+│   │   │   ├── runtime-core.ts  # Shared view runtime setup
+│   │   │   ├── view-ui.ts       # Hover nav buttons & context menu
+│   │   │   ├── geometry.ts      # Aspect-ratio & coordinate math
+│   │   │   └── types.ts         # Navigator options
+│   │   └── presenter/           # Presenter dashboard UI
+│   ├── server/           # Development server
+│   ├── template/         # HTML template & CSS bundling
+│   └── types/            # Shared TypeScript types
+├── tests/                # Test suites
+├── styles/               # CSS themes
+└── examples/             # Example presentations
 ```
 
 ## 🤝 Contributing
