@@ -1,11 +1,4 @@
-import {
-  parseArguments,
-  showHelp,
-  type CLIOptions,
-  consoleError,
-  consoleSuccess,
-  consoleInfo,
-} from "./utils";
+import { parseArguments, showHelp, consoleError, consoleSuccess, consoleInfo } from "./utils";
 import { build } from "./builder";
 import { startServer } from "../server/index";
 
