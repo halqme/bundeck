@@ -27,6 +27,7 @@ export async function startServer(inputPath: string, port: number) {
   const clients = new Set<ReadableStreamDefaultController>();
 
   consoleInfo(`Starting server for ${inputPath} on http://localhost:${port}`);
+  consoleInfo(`Presenter Mode on http://localhost:${port}/presenter`);
 
   // Watch for changes
   const watcher = watch(absoluteInputPath, async (event, filename) => {
