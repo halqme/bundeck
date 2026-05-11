@@ -1,23 +1,26 @@
 {
-  description = "A flake for slide_bun development environment";
-
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
   };
+  outputs = {nixpkgs, ...}: let
+    systems = ["x86_64-linux" "aarch64-darwin"];
+    for = f:
+      nixpkgs.lib.genAttrs systems (
+        system: f (import nixpkgs {inherit system;})
+      );
 
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = nixpkgs.legacyPackages.${system};
-      in
-      {
-        devShells.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            bun
-            oxlint
-          ];
-        };
-      }
-    );
+    deps = pkgs:
+      with pkgs; [
+        bun
+      ];
+  in {
+    devShells = for (pkgs: {
+      default = pkgs.mkShell {
+        buildInputs = deps pkgs;
+      };
+    });
+    packages = for (pkgs: {
+      default = deps pkgs;
+    });
+  };
 }
