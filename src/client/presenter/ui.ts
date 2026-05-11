@@ -133,7 +133,7 @@ export class PresenterUI {
     laserSlideBtn.onclick = (e) => {
       e.stopPropagation();
       if ((window as any).__togglePresenterPointer) {
-        (window as any).__togglePresenterPointer();
+        (window as any).__togglePresenterPointer(e.clientX, e.clientY);
       }
     };
 
