@@ -127,9 +127,22 @@ export class PresenterUI {
       }
     };
 
+    // Open view in new tab button
+    const openViewBtn = document.createElement("button");
+    openViewBtn.id = "open-view-btn";
+    openViewBtn.innerHTML = "↗";
+    openViewBtn.title = "新規タブでビューモードを開く";
+    openViewBtn.onclick = (e) => {
+      e.stopPropagation();
+      const viewPath = window.location.pathname.replace(/\/presenter\/?$/, "") || "/";
+      const viewUrl = window.location.origin + viewPath + window.location.hash;
+      window.open(viewUrl, "_blank");
+    };
+
     slideControls.appendChild(prevBtn);
     slideControls.appendChild(nextBtn);
     slideControls.appendChild(laserSlideBtn);
+    slideControls.appendChild(openViewBtn);
 
     currentView.appendChild(this.currentFrame);
     currentView.appendChild(slideControls);
