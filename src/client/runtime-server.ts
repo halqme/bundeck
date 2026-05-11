@@ -10,7 +10,7 @@
  */
 import { PresenterUI } from "./presenter/ui";
 import { createViewRuntime } from "./core/runtime-core";
-import { setupViewUI } from "./core/view-ui";
+import { setupViewUI, addContextMenuItem, openPresenterMode } from "./core/view-ui";
 import {
   getSlideDimensions,
   computeSlideDisplayArea,
@@ -68,6 +68,8 @@ function setupViewMode(channel: BroadcastChannel | null) {
 
   // View-mode UI extras: hover nav buttons, context menu
   setupViewUI(navigator);
+  // Add presenter mode option to context menu (only available in server mode)
+  addContextMenuItem("プレゼンターモードを開く", () => openPresenterMode());
 
   // ── Laser pointer ────────────────────────────────────────────
 

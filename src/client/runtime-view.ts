@@ -12,5 +12,5 @@ document.addEventListener("DOMContentLoaded", () => {
   const { navigator } = createViewRuntime();
 
   // View-mode UI extras: hover nav buttons, context menu
-  setupViewUI(navigator);
+  setupViewUI(navigator); // showPresenterOption defaults to false for static builds
 });

@@ -27,6 +27,40 @@ export function setupViewUI(navigator: SlideNavigator, options: ViewUIOptions = 
   createContextMenu(navigator, onNavigate);
 }
 
+/**
+ * Add extra items to the context menu (e.g. presenter mode option in server mode).
+ * Called after setupViewUI() when additional menu options are needed.
+ */
+export function addContextMenuItem(
+  label: string,
+  action: () => void,
+  options?: { shortcut?: string },
+) {
+  const menu = document.getElementById("vnav-context-menu");
+  if (!menu) return;
+
+  const sep = document.createElement("hr");
+  menu.appendChild(sep);
+
+  const item = document.createElement("div");
+  item.className = "vnav-context-item";
+  item.textContent = label;
+
+  if (options?.shortcut) {
+    const shortcutSpan = document.createElement("span");
+    shortcutSpan.className = "shortcut";
+    shortcutSpan.textContent = options.shortcut;
+    item.appendChild(shortcutSpan);
+  }
+
+  item.onclick = () => {
+    action();
+    menu.style.display = "none";
+  };
+
+  menu.appendChild(item);
+}
+
 // ─── Navigation Buttons ────────────────────────────────────────────
 
 function createNavigationButtons(navigator: SlideNavigator, onNavigate?: () => void) {
@@ -123,8 +157,6 @@ function createContextMenu(navigator: SlideNavigator, onNavigate?: () => void) {
       shortcut: undefined,
       action: () => promptGoToSlide(navigator, onNavigate),
     },
-    { label: null, shortcut: undefined, action: null }, // separator
-    { label: "プレゼンターモードを開く", shortcut: undefined, action: () => openPresenterMode() },
   ];
 
   menuItems.forEach((item) => {
@@ -205,7 +237,11 @@ function promptGoToSlide(navigator: SlideNavigator, onNavigate?: () => void) {
   onNavigate?.();
 }
 
-function openPresenterMode() {
+/**
+ * Open presenter mode in a new tab.
+ * Defined here as a shared utility, but only called from server runtime.
+ */
+export function openPresenterMode() {
   const base = window.location.pathname.replace(/\/+$/, "");
   // If we're already on /presenter, go to the non-presenter path
   const presenterPath = base.endsWith("/presenter")

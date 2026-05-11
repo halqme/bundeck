@@ -9,13 +9,22 @@ export class ServerHTMLGenerator {
     this.renderer = new HTMLRenderer({
       enableMinify: options.enableMinify,
       inlineAssets: options.inlineAssets,
+      includePresenterAssets: true,
     });
   }
 
-  async generate(
-    presentation: Presentation,
-  ): Promise<
-    string | { html: string; assets: { mainCss: string; printCss: string; themeCss: string } }
+  async generate(presentation: Presentation): Promise<
+    | string
+    | {
+        html: string;
+        assets: {
+          mainCss: string;
+          printCss: string;
+          themeCss: string;
+          viewUiCss: string;
+          presenterCss: string;
+        };
+      }
   > {
     const buildResult = await Bun.build({
       entrypoints: ["src/client/runtime-server.ts"],

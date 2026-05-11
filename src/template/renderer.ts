@@ -23,10 +23,18 @@ export class HTMLRenderer {
   private minifier: HTMLMinifier;
   private enableMinify: boolean;
   private inlineAssets: boolean;
+  private includePresenterAssets: boolean;
 
-  constructor(options: { enableMinify?: boolean; inlineAssets?: boolean } = {}) {
+  constructor(
+    options: {
+      enableMinify?: boolean;
+      inlineAssets?: boolean;
+      includePresenterAssets?: boolean;
+    } = {},
+  ) {
     this.enableMinify = options.enableMinify ?? false;
     this.inlineAssets = options.inlineAssets ?? true;
+    this.includePresenterAssets = options.includePresenterAssets ?? false;
     this.markedInstance = this.createMarkedInstance();
     this.minifier = new HTMLMinifier();
   }
@@ -132,7 +140,10 @@ export class HTMLRenderer {
 
     const viewUiCss = await readFileSafe(styles.viewUi, "view-ui");
 
-    const presenterCss = await readFileSafe(styles.presenter, "presenter");
+    // Presenter CSS is only included for server builds where presenter mode is available
+    const presenterCss = this.includePresenterAssets
+      ? await readFileSafe(styles.presenter, "presenter")
+      : "";
 
     return {
       mainCss,
@@ -252,14 +263,17 @@ export class HTMLRenderer {
       .map(([property, value]) => `${property}: ${value};`)
       .join(" ");
 
+    const presenterLink = this.includePresenterAssets
+      ? '\n      <link rel="stylesheet" href="/assets/presenter.css">'
+      : "";
+
     const headContent = `
       <style>
         :root { ${aspectRatioStyles} }
       </style>
       <link rel="stylesheet" href="/assets/styles.css">
       <link rel="stylesheet" href="/assets/theme.css">
-      <link rel="stylesheet" href="/assets/view-ui.css">
-      <link rel="stylesheet" href="/assets/presenter.css">
+      <link rel="stylesheet" href="/assets/view-ui.css">${presenterLink}
       <link rel="stylesheet" href="/assets/print.css" media="print">
     `.trim();
 
