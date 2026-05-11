@@ -77,7 +77,7 @@ export class HTMLMinifier {
         // Remove CSS comments
         .replace(/\/\*[\s\S]*?\*\//g, "")
         // Remove whitespace around braces, semicolons, colons, and commas
-        .replace(/\s*([\{\};:,])\s*/g, "$1")
+        .replace(/\s*([{};:,])\s*/g, "$1")
         // Remove newlines and extra spaces
         .replace(/\n/g, "")
         .replace(/\s+/g, " ")
