@@ -186,6 +186,11 @@ export class PresenterUI {
 
     // Focus to capture keyboard events immediately
     this.container.focus();
+
+    // Verify iframes were created (they are populated later by updateViews)
+    if (!this.currentFrame || !this.nextFrame) {
+      console.warn("Presenter UI mounted but iframe elements are missing");
+    }
   }
 
   public updateViews(currentIndex: number, totalSlides: number) {

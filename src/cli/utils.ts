@@ -204,5 +204,10 @@ export function validateInputFile(inputPath: string): string {
     throw new Error(`File not found: ${inputPath}`);
   }
 
+  const ext = extname(absInputPath).toLowerCase();
+  if (ext !== ".md" && ext !== ".markdown") {
+    consoleWarn(`Unexpected file extension "${ext}" — expected .md or .markdown`);
+  }
+
   return absInputPath;
 }
