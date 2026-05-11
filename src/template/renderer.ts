@@ -39,7 +39,11 @@ export class HTMLRenderer {
     presentation: Presentation,
     runtimeScriptContent: string,
   ): Promise<
-    string | { html: string; assets: { mainCss: string; printCss: string; themeCss: string } }
+    | string
+    | {
+        html: string;
+        assets: { mainCss: string; printCss: string; themeCss: string; viewUiCss: string };
+      }
   > {
     const { slides, meta } = presentation;
     const config = this.extractConfig(meta);
@@ -120,10 +124,13 @@ export class HTMLRenderer {
 
     const printCss = await readFileSafe(styles.print, "print");
 
+    const viewUiCss = await readFileSafe(styles.viewUi, "view-ui");
+
     return {
       mainCss,
       printCss,
       themeUsed,
+      viewUiCss,
     };
   }
 
@@ -165,7 +172,12 @@ export class HTMLRenderer {
     assets: Awaited<ReturnType<typeof this.loadAssets>>,
     slidesHtml: string,
     runtimeScript: string,
-  ): string | { html: string; assets: { mainCss: string; printCss: string; themeCss: string } } {
+  ):
+    | string
+    | {
+        html: string;
+        assets: { mainCss: string; printCss: string; themeCss: string; viewUiCss: string };
+      } {
     const minifiedAssets = this.minifyAssets(assets);
 
     if (this.inlineAssets) {
@@ -181,6 +193,7 @@ export class HTMLRenderer {
       themeCss: this.minifier.minifyCSS(assets.themeUsed),
       mainCss: this.minifier.minifyCSS(assets.mainCss),
       printCss: this.minifier.minifyCSS(assets.printCss),
+      viewUiCss: this.minifier.minifyCSS(assets.viewUiCss),
     };
   }
 
@@ -199,7 +212,7 @@ export class HTMLRenderer {
       .map(([property, value]) => `${property}: ${value};`)
       .join(" ");
 
-    const inlineStyles = `:root { ${aspectRatioStyles} }\n${minifiedAssets.themeCss}${minifiedAssets.mainCss}${minifiedAssets.printCss}`;
+    const inlineStyles = `:root { ${aspectRatioStyles} }\n${minifiedAssets.themeCss}${minifiedAssets.mainCss}${minifiedAssets.viewUiCss}${minifiedAssets.printCss}`;
 
     return this.createHTMLTemplate({
       config,
@@ -229,6 +242,7 @@ export class HTMLRenderer {
       </style>
       <link rel="stylesheet" href="/assets/styles.css">
       <link rel="stylesheet" href="/assets/theme.css">
+      <link rel="stylesheet" href="/assets/view-ui.css">
       <link rel="stylesheet" href="/assets/print.css" media="print">
     `.trim();
 
