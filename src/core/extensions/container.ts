@@ -17,16 +17,38 @@ export const containerExtension: TokenizerAndRendererExtension = {
     // Example: ::: speaker \n ... \n ::
     // Example: ::: .mark \n ... \n ::
     // Supports variable length fences (::: vs :::: etc) for nesting
-    const opening = /^(:{3,})\s+([^\r\n]+)\r?\n/.exec(src);
-    if (!opening) {
+    const firstLineBreak = src.indexOf("\n");
+    if (firstLineBreak === -1) {
       return;
     }
 
-    const fence = opening[1]!;
-    const rawKind = opening[2]!.trim();
+    let openingLine = src.slice(0, firstLineBreak);
+    if (openingLine.endsWith("\r")) {
+      openingLine = openingLine.slice(0, -1);
+    }
+    if (!openingLine.startsWith(":::")) {
+      return;
+    }
+
+    let fenceLength = 0;
+    while (openingLine[fenceLength] === ":") {
+      fenceLength++;
+    }
+    if (fenceLength < 3) {
+      return;
+    }
+
+    const kindSegment = openingLine.slice(fenceLength);
+    if (!/^\s+/.test(kindSegment)) {
+      return;
+    }
+
+    const rawKind = kindSegment.trim();
     if (!rawKind) {
       return;
     }
+
+    const fence = ":".repeat(fenceLength);
 
     // Named container (e.g. "speaker") is strict to avoid accidental captures.
     if (!rawKind.startsWith(".") && !/^[A-Za-z0-9_-]+$/.test(rawKind)) {
@@ -38,12 +60,12 @@ export const containerExtension: TokenizerAndRendererExtension = {
       return;
     }
 
-    const content = src.slice(opening[0].length);
+    const content = src.slice(firstLineBreak + 1);
     let cursor = 0;
     let closingStart = -1;
     let closingLineEnd = -1;
 
-    while (cursor <= content.length) {
+    while (cursor < content.length) {
       const nextLineBreak = content.indexOf("\n", cursor);
       const lineEnd = nextLineBreak === -1 ? content.length : nextLineBreak;
       let line = content.slice(cursor, lineEnd);
@@ -67,7 +89,7 @@ export const containerExtension: TokenizerAndRendererExtension = {
       return;
     }
 
-    const rawEnd = opening[0].length + closingLineEnd + (closingLineEnd < content.length ? 1 : 0);
+    const rawEnd = firstLineBreak + 1 + closingLineEnd + (closingLineEnd < content.length ? 1 : 0);
     const token: ContainerToken = {
       type: "container",
       raw: src.slice(0, rawEnd),
