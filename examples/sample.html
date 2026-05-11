@@ -110,8 +110,7 @@ slide.build(&quot;presentation.md&quot;);
 </section>
 <section class="slide" id="slide-9" data-id="9" style="font-size: 24px">
 <h2>🏁 まとめ</h2>
-<p>Slide Bunを使えば、デザインに悩む時間を減らし、
-**「内容を伝えること」**に集中できます。</p>
+<p>Slide Bunを使えば、デザインに悩む時間を減らし、 <strong>「内容を伝えること」</strong> に集中できます。</p>
 <h3>次のステップ</h3>
 <ol>
 <li><code>slide-bun my-slides.md</code> でビルド</li>
@@ -122,7 +121,112 @@ slide.build(&quot;presentation.md&quot;);
 </div>
 </div>
 <script>
-class ${slides;currentSlideIndex=0;container;minScale;minContainerWidth;minContainerHeight;minContainerScale;recomputeTimeout=null;onSlideChange;constructor(j={}){let K=j.slideSelector||".slide";this.slides=Array.from(document.querySelectorAll(K)),this.container=document.getElementById(j.containerId||"slide-container"),this.minScale=j.minScale||0.4,this.onSlideChange=j.onSlideChange,this.handleResize=this.handleResize.bind(this),this.handleOrientation=this.handleOrientation.bind(this),window.addEventListener("resize",this.handleResize),window.addEventListener("orientationchange",this.handleOrientation);let E=document.documentElement,G=parseInt(getComputedStyle(E).getPropertyValue("--slide-width")||"1280"),M=parseInt(getComputedStyle(E).getPropertyValue("--slide-height")||"720");this.minContainerWidth=j.minContainerWidth??G,this.minContainerHeight=j.minContainerHeight??M,this.minContainerScale=j.minContainerScale??0.7}get totalSlides(){return this.slides.length}get currentIndex(){return this.currentSlideIndex}destroy(){window.removeEventListener("resize",this.handleResize),window.removeEventListener("orientationchange",this.handleOrientation)}goTo(j,K=!1){if(this.slides.length===0)return;let E=Math.max(0,Math.min(j,this.totalSlides-1)),G=this.slides[E];if(G)try{let q=this.computeScaleForSlide(G);G.style.setProperty("--text-scale",String(Number(q.toFixed(3))))}catch(q){console.warn("Failed to compute scale for slide:",q)}this.slides.forEach((q,A)=>{if(A===E){if(q.classList.add("active"),this.scheduleRecompute(40),Array.from(q.querySelectorAll("img")).forEach((Q)=>{if(!Q.complete){let Z=()=>{this.scheduleRecompute(),Q.removeEventListener("load",Z)};Q.addEventListener("load",Z)}}),document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{this.scheduleRecompute()}).catch(()=>{})}else{if(q.classList.contains("active")){let R=!1,Q=(_)=>{if(_.propertyName==="opacity"){if(!R)this.clearScaleFromSlide(q),R=!0;q.removeEventListener("transitionend",Q)}};q.addEventListener("transitionend",Q);let Z=window.setTimeout(()=>{if(!R)this.clearScaleFromSlide(q);try{q.removeEventListener("transitionend",Q)}catch{}clearTimeout(Z)},350)}else this.clearScaleFromSlide(q);q.classList.remove("active")}});let M=this.currentSlideIndex;if(this.currentSlideIndex=E,!K&&this.onSlideChange&&M!==E)this.onSlideChange(E)}next(){if(this.currentSlideIndex<this.totalSlides-1)this.goTo(this.currentSlideIndex+1)}prev(){if(this.currentSlideIndex>0)this.goTo(this.currentSlideIndex-1)}computeScaleForSlide(j){let K=this.container?this.container.clientHeight:window.innerHeight,E=window.getComputedStyle(j),G=parseFloat(E.paddingTop||"0")||0,M=parseFloat(E.paddingBottom||"0")||0,q=Math.max(0,K-(G+M)),A=Math.max(0,(j.scrollHeight||0)-(G+M));if(!A||A<=q)return 1;let P=q/A;return Math.max(this.minScale,Math.min(1,P))}applyScaleToSlide(j){let K=this.computeScaleForSlide(j);j.style.setProperty("--text-scale",String(Number(K.toFixed(3))))}clearScaleFromSlide(j){j.style.removeProperty("--text-scale")}scheduleRecompute(j=80){if(this.recomputeTimeout!==null)window.clearTimeout(this.recomputeTimeout);this.recomputeTimeout=window.setTimeout(()=>{let K=this.slides[this.currentSlideIndex];if(K)this.applyScaleToSlide(K);this.recomputeTimeout=null},j)}handleResize(){this.updateContainerTransform(),this.scheduleRecompute(80)}handleOrientation(){this.updateContainerTransform(),this.scheduleRecompute(120)}updateContainerTransform(){if(!this.container)return;let{innerWidth:j,innerHeight:K}=window;if(j<this.minContainerWidth||K<this.minContainerHeight){let E=j/this.minContainerWidth,G=K/this.minContainerHeight,M=Math.min(E,G);if(this.minContainerScale!==void 0)M=Math.max(M,this.minContainerScale);this.container.style.transform=`scale(${M})`,this.container.style.transformOrigin="center center"}else this.container.style.transform="",this.container.style.transformOrigin=""}}document.addEventListener("DOMContentLoaded",()=>{let j=new $;function K(){let A=document.documentElement,P=parseInt(getComputedStyle(A).getPropertyValue("--slide-width")||"1280"),R=parseInt(getComputedStyle(A).getPropertyValue("--slide-height")||"720");return{slideWidth:P,slideHeight:R}}function E(){let A=document.getElementById("slide-container");if(!A)return;let{slideWidth:P,slideHeight:R}=K(),Q=window.innerWidth,Z=window.innerHeight,_=Q/P,D=Z/R,F=Math.min(_,D);A.style.transform=`scale(${F})`,A.style.transformOrigin="center center"}function G(){window.location.hash=`#${j.currentIndex+1}`}function M(){let A=window.location.hash.substring(1),P=parseInt(A,10);if(!isNaN(P)&&P>=1&&P<=j.totalSlides){if(P-1!==j.currentIndex)j.goTo(P-1)}}if(document.addEventListener("keydown",(A)=>{switch(A.key){case"ArrowRight":case"Space":case"Enter":case"n":if(A.key==="Space")A.preventDefault();j.next(),G();break;case"ArrowLeft":case"p":j.prev(),G();break;case"Home":j.goTo(0),G();break;case"End":j.goTo(j.totalSlides-1),G();break}}),window.location.hash)M();else j.goTo(0),G();E();let q;window.addEventListener("resize",()=>{clearTimeout(q),q=window.setTimeout(E,16)}),document.body.classList.add("js-active"),window.addEventListener("hashchange",M)});
+class X{slides;currentSlideIndex=0;container;minScale;minContainerWidth;minContainerHeight;minContainerScale;recomputeTimeout=null;onSlideChange;constructor(j={}){let R=j.slideSelector||".slide";this.slides=Array.from(document.querySelectorAll(R)),this.container=document.getElementById(j.containerId||"slide-container"),this.minScale=j.minScale||0.4,this.onSlideChange=j.onSlideChange,this.handleResize=this.handleResize.bind(this),this.handleOrientation=this.handleOrientation.bind(this),window.addEventListener("resize",this.handleResize),window.addEventListener("orientationchange",this.handleOrientation);let q=document.documentElement,K=parseInt(getComputedStyle(q).getPropertyValue("--slide-width")||"1280"),Q=parseInt(getComputedStyle(q).getPropertyValue("--slide-height")||"720");this.minContainerWidth=j.minContainerWidth??K,this.minContainerHeight=j.minContainerHeight??Q,this.minContainerScale=j.minContainerScale??0.7}get totalSlides(){return this.slides.length}get currentIndex(){return this.currentSlideIndex}destroy(){window.removeEventListener("resize",this.handleResize),window.removeEventListener("orientationchange",this.handleOrientation)}goTo(j,R=!1){if(this.slides.length===0)return;let q=Math.max(0,Math.min(j,this.totalSlides-1)),K=this.slides[q];if(K)try{let Z=this.computeScaleForSlide(K);K.style.setProperty("--text-scale",String(Number(Z.toFixed(3))))}catch(Z){console.warn("Failed to compute scale for slide:",Z)}this.slides.forEach((Z,$)=>{if($===q){if(Z.classList.add("active"),this.scheduleRecompute(40),Array.from(Z.querySelectorAll("img")).forEach((F)=>{if(!F.complete){let J=()=>{this.scheduleRecompute(),F.removeEventListener("load",J)};F.addEventListener("load",J)}}),document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{this.scheduleRecompute()}).catch(()=>{})}else{if(Z.classList.contains("active")){let G=!1,F=(O)=>{if(O.propertyName==="opacity"){if(!G)this.clearScaleFromSlide(Z),G=!0;Z.removeEventListener("transitionend",F)}};Z.addEventListener("transitionend",F);let J=window.setTimeout(()=>{if(!G)this.clearScaleFromSlide(Z);try{Z.removeEventListener("transitionend",F)}catch{}clearTimeout(J)},350)}else this.clearScaleFromSlide(Z);Z.classList.remove("active")}});let Q=this.currentSlideIndex;if(this.currentSlideIndex=q,!R&&this.onSlideChange&&Q!==q)this.onSlideChange(q)}next(){if(this.currentSlideIndex<this.totalSlides-1)this.goTo(this.currentSlideIndex+1)}prev(){if(this.currentSlideIndex>0)this.goTo(this.currentSlideIndex-1)}computeScaleForSlide(j){let R=this.container?this.container.clientHeight:window.innerHeight,q=window.getComputedStyle(j),K=parseFloat(q.paddingTop||"0")||0,Q=parseFloat(q.paddingBottom||"0")||0,Z=Math.max(0,R-(K+Q)),$=Math.max(0,(j.scrollHeight||0)-(K+Q));if(!$||$<=Z)return 1;let D=Z/$;return Math.max(this.minScale,Math.min(1,D))}applyScaleToSlide(j){let R=this.computeScaleForSlide(j);j.style.setProperty("--text-scale",String(Number(R.toFixed(3))))}clearScaleFromSlide(j){j.style.removeProperty("--text-scale")}scheduleRecompute(j=80){if(this.recomputeTimeout!==null)window.clearTimeout(this.recomputeTimeout);this.recomputeTimeout=window.setTimeout(()=>{let R=this.slides[this.currentSlideIndex];if(R)this.applyScaleToSlide(R);this.recomputeTimeout=null},j)}handleResize(){this.updateContainerTransform(),this.scheduleRecompute(80)}handleOrientation(){this.updateContainerTransform(),this.scheduleRecompute(120)}updateContainerTransform(){if(!this.container)return;let{innerWidth:j,innerHeight:R}=window;if(j<this.minContainerWidth||R<this.minContainerHeight){let q=j/this.minContainerWidth,K=R/this.minContainerHeight,Q=Math.min(q,K);if(this.minContainerScale!==void 0)Q=Math.max(Q,this.minContainerScale);this.container.style.transform=`scale(${Q})`,this.container.style.transformOrigin="center center"}else this.container.style.transform="",this.container.style.transformOrigin=""}}var P=`
+/* ── Hover navigation buttons ── */
+#vnav-hover-area {
+position: fixed;
+bottom: 0;
+right: 0;
+width: 180px;
+height: 180px;
+z-index: 9999;
+/* invisible trigger area */
+}
+#vnav-buttons {
+position: fixed;
+bottom: 32px;
+right: 32px;
+display: flex;
+gap: 12px;
+z-index: 10000;
+opacity: 0;
+pointer-events: none;
+transition: opacity 0.25s ease, transform 0.25s ease;
+transform: translateY(8px);
+}
+#vnav-hover-area:hover + #vnav-buttons,
+#vnav-buttons:hover,
+#vnav-buttons:focus-within {
+opacity: 1;
+pointer-events: auto;
+transform: translateY(0);
+}
+#vnav-buttons button {
+width: 48px;
+height: 48px;
+border-radius: 50%;
+border: 1px solid rgba(255, 255, 255, 0.25);
+background: rgba(30, 30, 40, 0.85);
+backdrop-filter: blur(8px);
+-webkit-backdrop-filter: blur(8px);
+color: #fff;
+font-size: 24px;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+transition: background 0.15s ease, transform 0.15s ease;
+line-height: 1;
+user-select: none;
+-webkit-user-select: none;
+}
+#vnav-buttons button:hover {
+background: rgba(60, 60, 80, 0.9);
+transform: scale(1.1);
+}
+#vnav-buttons button:active {
+transform: scale(0.95);
+}
+#vnav-buttons button:focus-visible {
+outline: 2px solid #4fc3f7;
+outline-offset: 2px;
+}
+/* ── Context menu ── */
+#vnav-context-menu {
+position: fixed;
+z-index: 10001;
+min-width: 220px;
+background: rgba(35, 35, 45, 0.95);
+backdrop-filter: blur(12px);
+-webkit-backdrop-filter: blur(12px);
+border: 1px solid rgba(255, 255, 255, 0.12);
+border-radius: 10px;
+padding: 6px 0;
+box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+font-family: system-ui, -apple-system, sans-serif;
+font-size: 13px;
+color: #e0e0e8;
+user-select: none;
+-webkit-user-select: none;
+}
+#vnav-context-menu .vnav-context-item {
+padding: 8px 16px;
+cursor: pointer;
+display: flex;
+align-items: center;
+gap: 10px;
+transition: background 0.1s ease;
+}
+#vnav-context-menu .vnav-context-item:hover {
+background: rgba(79, 195, 247, 0.15);
+color: #fff;
+}
+#vnav-context-menu .vnav-context-item:active {
+background: rgba(79, 195, 247, 0.25);
+}
+#vnav-context-menu hr {
+margin: 4px 12px;
+border: none;
+border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+/* Context menu keyboard shortcut hints */
+#vnav-context-menu .vnav-context-item .shortcut {
+margin-left: auto;
+color: #888;
+font-size: 11px;
+}
+`;function z(j,R={}){let{onNavigate:q}=R;if(!document.getElementById("vnav-styles")){let K=document.createElement("style");K.id="vnav-styles",K.textContent=P,document.head.appendChild(K)}Y(j,q),_(j,q)}function Y(j,R){let q=document.createElement("div");q.id="vnav-buttons";let K=document.createElement("button");K.id="vnav-prev",K.title="前のスライド (←)",K.setAttribute("aria-label","前のスライド"),K.innerHTML="‹";let Q=document.createElement("button");Q.id="vnav-next",Q.title="次のスライド (→)",Q.setAttribute("aria-label","次のスライド"),Q.innerHTML="›",q.appendChild(K),q.appendChild(Q),document.body.appendChild(q);let Z=document.createElement("div");Z.id="vnav-hover-area",document.body.insertBefore(Z,q);let $=(D)=>{D(),R?.()};K.onclick=(D)=>{D.stopPropagation(),$(()=>j.prev())},Q.onclick=(D)=>{D.stopPropagation(),$(()=>j.next())}}function _(j,R){let q=document.createElement("div");q.id="vnav-context-menu",q.style.display="none",document.body.appendChild(q),[{label:"最初のスライド",shortcut:"Home",action:()=>{j.goTo(0),R?.()}},{label:"前のスライド",shortcut:"←",action:()=>{j.prev(),R?.()}},{label:"次のスライド",shortcut:"→",action:()=>{j.next(),R?.()}},{label:"最後のスライド",shortcut:"End",action:()=>{j.goTo(j.totalSlides-1),R?.()}},{label:null,shortcut:void 0,action:null},{label:"スライド番号を指定...",shortcut:void 0,action:()=>M(j,R)},{label:null,shortcut:void 0,action:null},{label:"プレゼンターモードを開く",shortcut:void 0,action:()=>U()}].forEach((Q)=>{if(Q.action===null){let Z=document.createElement("hr");q.appendChild(Z)}else{let Z=document.createElement("div");if(Z.className="vnav-context-item",Z.textContent=Q.label,Q.shortcut){let $=document.createElement("span");$.className="shortcut",$.textContent=Q.shortcut,Z.appendChild($)}Z.onclick=()=>{Q.action(),q.style.display="none"},q.appendChild(Z)}}),document.addEventListener("contextmenu",(Q)=>{Q.preventDefault(),L(q,Q.clientX,Q.clientY)}),document.addEventListener("click",(Q)=>{if(q.style.display!=="none"&&!q.contains(Q.target))q.style.display="none"}),document.addEventListener("keydown",(Q)=>{if(Q.key==="Escape"&&q.style.display!=="none")q.style.display="none"})}function L(j,R,q){j.style.display="block",j.style.left=`${R}px`,j.style.top=`${q}px`;let K=j.getBoundingClientRect();if(K.right>window.innerWidth)j.style.left=`${window.innerWidth-K.width-8}px`;if(K.bottom>window.innerHeight)j.style.top=`${window.innerHeight-K.height-8}px`}function M(j,R){let q=prompt(`スライド番号を入力 (1 〜 ${j.totalSlides})`,String(j.currentIndex+1));if(q===null)return;let K=parseInt(q,10);if(isNaN(K)||K<1||K>j.totalSlides){alert(`1 〜 ${j.totalSlides} の範囲で入力してください`);return}j.goTo(K-1),R?.()}function U(){let j=window.location.pathname.replace(/\/+$/,""),R=j.endsWith("/presenter")?j.replace(/\/presenter$/,"")||"/":"/presenter",q=window.location.origin+R+window.location.hash;window.open(q,"_blank")}document.addEventListener("DOMContentLoaded",()=>{let j=new X;z(j,{onNavigate:K});function R(){let $=document.documentElement,D=parseInt(getComputedStyle($).getPropertyValue("--slide-width")||"1280"),G=parseInt(getComputedStyle($).getPropertyValue("--slide-height")||"720");return{slideWidth:D,slideHeight:G}}function q(){let $=document.getElementById("slide-container");if(!$)return;let{slideWidth:D,slideHeight:G}=R(),F=window.innerWidth,J=window.innerHeight,O=F/D,A=J/G,E=Math.min(O,A);$.style.transform=`scale(${E})`,$.style.transformOrigin="center center"}function K(){window.location.hash=`#${j.currentIndex+1}`}function Q(){let $=window.location.hash.substring(1),D=parseInt($,10);if(!isNaN(D)&&D>=1&&D<=j.totalSlides){if(D-1!==j.currentIndex)j.goTo(D-1)}}if(document.addEventListener("keydown",($)=>{switch($.key){case"ArrowRight":case"Space":case"Enter":case"n":if($.key==="Space")$.preventDefault();j.next(),K();break;case"ArrowLeft":case"p":j.prev(),K();break;case"Home":j.goTo(0),K();break;case"End":j.goTo(j.totalSlides-1),K();break}}),window.location.hash)Q();else j.goTo(0),K();q();let Z;window.addEventListener("resize",()=>{clearTimeout(Z),Z=window.setTimeout(q,16)}),document.body.classList.add("js-active"),window.addEventListener("hashchange",Q)});
 </script>
 </body>
 </html>

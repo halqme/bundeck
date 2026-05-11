@@ -1,7 +1,11 @@
 import { SlideNavigator } from "./core/navigator";
+import { setupViewUI } from "./core/view-ui";
 
 document.addEventListener("DOMContentLoaded", () => {
   const navigator = new SlideNavigator();
+
+  // Set up view UI enhancements (hover nav buttons, context menu)
+  setupViewUI(navigator, { onNavigate: updateHash });
 
   // Get slide dimensions from CSS variables
   function getSlideDimensions() {

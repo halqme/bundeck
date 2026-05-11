@@ -1,5 +1,6 @@
 import { SlideNavigator } from "./core/navigator";
 import { PresenterUI } from "./presenter/ui";
+import { setupViewUI } from "./core/view-ui";
 import type { SyncMessage } from "../types";
 
 // Get slide dimensions from CSS variables
@@ -90,6 +91,9 @@ function setupClientMode(channel: BroadcastChannel | null) {
       updateHash(index);
     },
   });
+
+  // Set up view UI enhancements (hover nav buttons, context menu)
+  setupViewUI(navigator);
 
   // Laser pointer state and rendering
   let targetX = 0;
