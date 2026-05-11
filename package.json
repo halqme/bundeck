@@ -33,6 +33,7 @@
   },
   "scripts": {
     "start": "bun run build && bun run dist/cli.js",
+    "dev": "bun run build && bun run dist/cli.js serve",
     "build": "bun build src/cli.ts --outdir=./dist --target=bun --sourcemap",
     "test": "bun test",
     "check": "bun run format && bun run lint && bun run type-check",
