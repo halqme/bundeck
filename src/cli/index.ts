@@ -30,10 +30,10 @@ export async function runCLI(args: string[]): Promise<string> {
           }
         } else if (arg === "-h" || arg === "--help") {
           consoleInfo(`
-slide-bun serve - Start development server
+bundeck serve - Start development server
 
 Usage:
-  slide-bun serve <input.md> [Options]
+  bundeck serve <input.md> [Options]
 
 Options:
   -p, --port <number>    Set server port (default: 3000)
@@ -46,7 +46,7 @@ Options:
       }
 
       if (!inputPath) {
-        consoleError("serveコマンドには入力ファイルが必要です", "slide-bun serve <input.md>");
+        consoleError("serveコマンドには入力ファイルが必要です", "bundeck serve <input.md>");
         process.exit(1);
       }
 
@@ -57,7 +57,7 @@ Options:
 
     // Check for version flag
     if (args.includes("--version") || args.includes("-v")) {
-      consoleInfo("Slide Bun v0.0.1");
+      consoleInfo("Bundeck v0.0.1");
       process.exit(0);
     }
 

@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "slide_bun",
+      "name": "bundeck",
       "dependencies": {
         "marked": "18.0.3",
       },

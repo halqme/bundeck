@@ -1,8 +1,8 @@
-# Slide Bun 🐰
+# Bundeck 🐰
 
 **Zero-Config Slide Generator** — Write Markdown, get beautiful HTML slides instantly.
 
-Slide Bun is a fast, zero-configuration presentation tool powered by [Bun](https://bun.sh/). It transforms your Markdown files into polished, responsive HTML slides with automatic layout adjustments.
+Bundeck is a fast, zero-configuration presentation tool powered by [Bun](https://bun.sh/). It transforms your Markdown files into polished, responsive HTML slides with automatic layout adjustments.
 
 ## 🚀 Features
 
@@ -21,13 +21,13 @@ Slide Bun is a fast, zero-configuration presentation tool powered by [Bun](https
 ### Using Bun
 
 ```bash
-bun add -d slide_bun
+bun add -d bundeck
 ```
 
 Or run directly:
 
 ```bash
-bunx slide_bun <your-file.md>
+bunx bundeck <your-file.md>
 ```
 
 ### Using npm
@@ -35,9 +35,9 @@ bunx slide_bun <your-file.md>
 Although this tool is built for Bun, you can install it via npm if you have the Bun runtime available in your path.
 
 ```bash
-npm install -g slide_bun
+npm install -g bundeck
 # or run directly
-npx slide_bun <your-file.md>
+npx bundeck <your-file.md>
 ```
 
 _Note: Requires Bun runtime installed on your system._
@@ -48,10 +48,10 @@ This project provides a standard Nix flake.
 
 ```bash
 # Run directly
-nix run github:halqme/slide_bun -- <your-file.md>
+nix run github:halqme/bundeck -- <your-file.md>
 
 # Enter development shell
-nix develop github:halqme/slide_bun
+nix develop github:halqme/bundeck
 ```
 
 ## 🛠 Usage
@@ -61,7 +61,7 @@ nix develop github:halqme/slide_bun
 Generate a static HTML file from your Markdown source.
 
 ```bash
-slide-bun presentation.md
+bundeck presentation.md
 ```
 
 **Options:**
@@ -77,7 +77,7 @@ slide-bun presentation.md
 Start a local server to preview your slides.
 
 ```bash
-slide-bun serve presentation.md
+bundeck serve presentation.md
 ```
 
 **Options:**
@@ -109,7 +109,7 @@ Both the static build and server mode include in-viewport navigation:
 
 ## 📝 Markdown Syntax
 
-Slide Bun extends standard Markdown with powerful layout features.
+Bundeck extends standard Markdown with powerful layout features.
 
 ### Frontmatter
 
@@ -196,8 +196,8 @@ Don't forget to mention the new features!
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/halqme/slide_bun.git
-   cd slide_bun
+   git clone https://github.com/halqme/bundeck.git
+   cd bundeck
    ```
 
 2. Install dependencies:
@@ -224,7 +224,7 @@ For detailed API reference, see [API.md](API.md).
 ### Programmatic Usage
 
 ```typescript
-import { generateSlides, parseSlides } from "slide_bun";
+import { generateSlides, parseSlides } from "bundeck";
 
 // 基本的な使用
 const markdown = `# Title\n\n---\n\n# Slide 2`;
@@ -240,7 +240,7 @@ const html = await generateSlides(markdown, {
 
 ### Performance
 
-Slide Bun is optimized for speed:
+Bundeck is optimized for speed:
 
 | Scenario                         | Time    |
 | -------------------------------- | ------- |
@@ -251,7 +251,7 @@ Slide Bun is optimized for speed:
 ## 📁 Project Structure
 
 ```
-slide_bun/
+bundeck/
 ├── src/
 │   ├── cli/              # CLI tools
 │   ├── core/             # Core parsing and render logic

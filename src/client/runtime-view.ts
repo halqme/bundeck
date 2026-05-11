@@ -1,5 +1,5 @@
 /**
- * View-mode runtime for static builds (slide-bun build).
+ * View-mode runtime for static builds (bundeck build).
  *
  * Sets up slide navigation, keyboard shortcuts, hash routing,
  * viewport scaling, and the view-mode UI extras (hover nav buttons,

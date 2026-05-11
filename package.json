@@ -1,8 +1,8 @@
 {
-  "name": "slide_bun",
+  "name": "bundeck",
   "version": "0.1.0",
   "private": false,
-  "description": "zero-Config Slide Generator - Write Markdown, get beautiful slides automatically",
+  "description": "Zero-Config Slide Generator — Write Markdown, get beautiful slides automatically",
   "keywords": [
     "auto-layout",
     "bun",
@@ -12,15 +12,15 @@
     "typescript",
     "zero-config"
   ],
-  "homepage": "https://github.com/halqme/slide-bun#readme",
+  "homepage": "https://github.com/halqme/bundeck#readme",
   "bugs": {
-    "url": "https://github.com/halqme/slide_bun/issues"
+    "url": "https://github.com/halqme/bundeck/issues"
   },
   "license": "MIT",
   "author": "HALQME",
   "repository": {
     "type": "git",
-    "url": "https://github.com/halqme/slide_bun"
+    "url": "https://github.com/halqme/bundeck"
   },
   "bin": "dist/cli.js",
   "files": [

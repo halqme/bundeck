@@ -1,5 +1,5 @@
 /**
- * Server-mode runtime (slide-bun serve).
+ * Server-mode runtime (bundeck serve).
  *
  * Serves the same HTML on two paths:
  *   /          → view mode (projector / audience screen)
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let channel: BroadcastChannel | null = null;
   if (!isPreview) {
     try {
-      channel = new BroadcastChannel("slide-bun-sync");
+      channel = new BroadcastChannel("bundeck-sync");
     } catch (e) {
       console.warn("BroadcastChannel is not supported — sync disabled:", e);
     }
