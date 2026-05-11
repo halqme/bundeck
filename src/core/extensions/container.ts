@@ -1,4 +1,5 @@
 import type { TokenizerAndRendererExtension, Tokens } from "marked";
+import { attrsToClass } from "./classUtils";
 
 export interface ContainerToken extends Tokens.Generic {
   type: "container";
@@ -14,15 +15,22 @@ export const containerExtension: TokenizerAndRendererExtension = {
   },
   tokenizer(src: string) {
     // Example: ::: speaker \n ... \n ::
+    // Example: ::: .mark \n ... \n ::
     // Supports variable length fences (::: vs :::: etc) for nesting
     // Allows whitespace before closing fence
-    const rule = /^(:{3,}) *(\w+)\n([\s\S]*?)\n *(\1)(?:\n|$)/;
+    const rule = /^(:{3,}) *([^\n]+)\n([\s\S]*?)\n *(\1)(?:\n|$)/;
     const match = rule.exec(src);
     if (match) {
+      const rawKind = match[2]!.trim();
+      const normalizedKind = rawKind.startsWith(".") ? attrsToClass(rawKind) : rawKind;
+      if (!normalizedKind) {
+        return;
+      }
+
       const token: ContainerToken = {
         type: "container",
         raw: match[0],
-        kind: match[2]!, // match[2] is the name now
+        kind: normalizedKind,
         tokens: [],
       };
 

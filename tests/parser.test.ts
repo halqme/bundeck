@@ -17,25 +17,37 @@ describe("MarkdownParser", () => {
     expect(htmlToken.raw).not.toContain("全\nて");
   });
 
-  it("should parse styled paragraphs correctly", () => {
+  it("should parse class container syntax correctly", () => {
+    const markdown = "::: .my-class\nStyled text\n:::";
+    const result = parseMarkdown(markdown);
+
+    const slide = result.slides[0]!;
+    const token = slide.contentTokens[0] as any;
+
+    expect(token.type).toBe("container");
+    expect(token.kind).toBe("my-class");
+  });
+
+  it("should no longer parse block-level {.class} paragraph syntax as styled block", () => {
     const markdown = "Styled text {.my-class}";
     const result = parseMarkdown(markdown);
 
     const slide = result.slides[0]!;
     const token = slide.contentTokens[0] as any;
 
-    expect(token.type).toBe("styledParagraph");
-    expect(token.text).toBe("Styled text");
-    expect(token.attrs).toBe(".my-class");
+    expect(token.type).toBe("paragraph");
+    expect(token.text).toBe("Styled text {.my-class}");
   });
 
-  it("should handle mixed content correctly", () => {
+  it("should handle mixed content with class container correctly", () => {
     const markdown = `
 # Title
 
 Normal paragraph.
 
-Styled paragraph {.red}
+::: .red
+Styled paragraph
+:::
     `.trim();
 
     const result = parseMarkdown(markdown);
@@ -44,6 +56,6 @@ Styled paragraph {.red}
 
     expect(tokens[0]!.type).toBe("heading");
     expect(tokens[1]!.type).toBe("paragraph");
-    expect(tokens[2]!.type).toBe("styledParagraph");
+    expect(tokens[2]!.type).toBe("container");
   });
 });

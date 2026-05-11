@@ -7,9 +7,7 @@ export { splitTokensToSlides } from "./core/splitter.js";
 // Extensions
 export {
   styledHeadingExtension,
-  styledParagraphExtension,
   type StyledHeadingToken,
-  type StyledParagraphToken,
 } from "./core/extensions/block.js";
 
 export { styledSpanExtension, type StyledSpanToken } from "./core/extensions/inline.js";

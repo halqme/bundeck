@@ -4,7 +4,6 @@ import {
   styledSpanExtension,
   containerExtension,
   styledImageExtension,
-  styledParagraphExtension,
 } from "../core/extensions";
 import { getSlideFontSizeAttribute } from "../core/layout-design";
 import { HTMLMinifier } from "../utils/minifier";
@@ -58,7 +57,6 @@ export class HTMLRenderer {
         styledSpanExtension,
         containerExtension,
         styledImageExtension,
-        styledParagraphExtension,
       ],
       renderer: {
         paragraph(token) {
