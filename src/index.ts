@@ -5,10 +5,7 @@ export { MarkdownParser, parseMarkdown } from "./core/parser.js";
 export { splitTokensToSlides } from "./core/splitter.js";
 
 // Extensions
-export {
-  styledHeadingExtension,
-  type StyledHeadingToken,
-} from "./core/extensions/block.js";
+export { styledHeadingExtension, type StyledHeadingToken } from "./core/extensions/block.js";
 
 export { styledSpanExtension, type StyledSpanToken } from "./core/extensions/inline.js";
 
