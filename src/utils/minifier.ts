@@ -20,27 +20,40 @@ export class HTMLMinifier {
   }
 
   /**
-   * Minify HTML string by removing unnecessary whitespace and comments
-   * Preserves whitespace and formatting inside <pre> tags.
+   * Minify HTML string by removing unnecessary whitespace and comments.
+   * Preserves whitespace and formatting inside <pre> and <script> tags.
    * Note: This is a basic minifier - for advanced minification, consider using html-minifier-terser
    */
   minify(html: string): string {
-    // Preserve <pre> tag contents to avoid destroying formatted whitespace
+    // Preserve <pre> inner content (keep outer tags in place for inter-tag whitespace removal)
     const preBlocks: string[] = [];
-    const placeholder = "___PRE_BLOCK_";
-    const preTagRegex = /<pre\b[^>]*>[\s\S]*?<\/pre>/gi;
+    const prePlaceholder = "___PRE_BLOCK_";
+    const htmlWithPre = html.replace(
+      /(<pre\b[^>]*>)([\s\S]*?)(<\/pre>)/gi,
+      (_match, openTag: string, content: string, closeTag: string) => {
+        const index = preBlocks.push(content) - 1;
+        return `${openTag}${prePlaceholder}${index}___${closeTag}`;
+      },
+    );
 
-    const htmlWithPlaceholders = html.replace(preTagRegex, (match) => {
-      const index = preBlocks.push(match) - 1;
-      return `${placeholder}${index}___`;
-    });
+    // Preserve <script> inner content with leading/trailing whitespace trimmed
+    const scriptBlocks: string[] = [];
+    const scriptPlaceholder = "___SCRIPT_BLOCK_";
+    const htmlWithScript = htmlWithPre.replace(
+      /(<script\b[^>]*>)([\s\S]*?)(<\/script>)/gi,
+      (_match, openTag: string, content: string, closeTag: string) => {
+        const trimmed = content.trim();
+        const index = scriptBlocks.push(trimmed) - 1;
+        return `${openTag}${scriptPlaceholder}${index}___${closeTag}`;
+      },
+    );
 
     return (
-      htmlWithPlaceholders
+      htmlWithScript
         // Remove HTML comments except for conditional comments
         .replace(/<!--(?!\s*\[if)[\s\S]*?-->/g, "")
-        // Remove whitespace between tags
-        .replace(/>\s{2,}</g, "> <")
+        // Remove all whitespace between tags
+        .replace(/>\s+</g, "><")
         // Remove leading/trailing whitespace
         .trim()
         // Remove newlines
@@ -49,8 +62,13 @@ export class HTMLMinifier {
         .replace(/\t/g, "")
         // Restore original <pre> block contents
         .replace(/___PRE_BLOCK_\d+___/g, (match) => {
-          const index = parseInt(match.slice(placeholder.length, -3), 10);
-          return preBlocks[index] || "";
+          const index = parseInt(match.slice(prePlaceholder.length, -3), 10);
+          return preBlocks[index] ?? "";
+        })
+        // Restore original <script> block contents
+        .replace(/___SCRIPT_BLOCK_\d+___/g, (match) => {
+          const index = parseInt(match.slice(scriptPlaceholder.length, -3), 10);
+          return scriptBlocks[index] ?? "";
         })
     );
   }
