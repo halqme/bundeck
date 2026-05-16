@@ -10,7 +10,7 @@
  */
 import { PresenterUI } from "./presenter/ui";
 import { createViewRuntime } from "./core/runtime-core";
-import { setupViewUI } from "./core/view-ui";
+import { setupViewUI, addContextMenuItem, openPresenterMode } from "./core/view-ui";
 import {
   getSlideDimensions,
   computeSlideDisplayArea,
@@ -68,6 +68,8 @@ function setupViewMode(channel: BroadcastChannel | null) {
 
   // View-mode UI extras: hover nav buttons, context menu
   setupViewUI(navigator);
+  // Add presenter mode option to context menu (only available in server mode)
+  addContextMenuItem("プレゼンターモードを開く", () => openPresenterMode());
 
   // ── Laser pointer ────────────────────────────────────────────
 
@@ -83,13 +85,8 @@ function setupViewMode(channel: BroadcastChannel | null) {
   let lastPointerX = 0;
   let lastPointerY = 0;
   const INTERPOLATION = 0.2;
-  const MAX_PACKET_AGE = 500;
 
-  // Initial inactive state
-  channel?.postMessage({
-    type: "pointer",
-    payload: { x: 0, y: 0, active: false, timestamp: Date.now() },
-  } as SyncMessage);
+  channel?.postMessage({ type: "pointer", x: 0, y: 0, active: false } as SyncMessage);
 
   const updateLaserSize = () => {
     const { slideWidth, slideHeight } = getSlideDimensions();
@@ -102,7 +99,10 @@ function setupViewMode(channel: BroadcastChannel | null) {
 
   const applyPointer = (nx: number, ny: number, active: boolean) => {
     const container = document.getElementById("slide-container");
-    if (!container) return;
+    if (!container) {
+      console.warn("[bundeck:view] applyPointer: #slide-container not found");
+      return;
+    }
     const { slideWidth, slideHeight } = getSlideDimensions();
     const area = computeSlideDisplayArea(
       container.getBoundingClientRect(),
@@ -110,6 +110,9 @@ function setupViewMode(channel: BroadcastChannel | null) {
       slideHeight,
     );
     const pos = normalizedToClient(nx, ny, area);
+    console.log(
+      `[bundeck:view] applyPointer: normalized=(${nx.toFixed(3)}, ${ny.toFixed(3)}), active=${active}, pixel=(${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}), area={left:${area.left.toFixed(1)}, top:${area.top.toFixed(1)}, w:${area.width.toFixed(1)}, h:${area.height.toFixed(1)}}`,
+    );
     targetX = pos.x;
     targetY = pos.y;
     isActive = active;
@@ -119,19 +122,30 @@ function setupViewMode(channel: BroadcastChannel | null) {
     channel.onmessage = (event) => {
       const msg = event.data as SyncMessage;
       if (msg.type === "navigate") {
+        console.log(`[bundeck:view] received navigate: index=${msg.index}`);
         if (typeof msg.index === "number" && msg.index !== navigator.currentIndex) {
           navigator.goTo(msg.index, true);
         }
       } else if (msg.type === "pointer") {
-        if (Date.now() - msg.payload.timestamp > MAX_PACKET_AGE) return;
-        lastPointerX = msg.payload.x;
-        lastPointerY = msg.payload.y;
-        applyPointer(msg.payload.x, msg.payload.y, msg.payload.active);
+        console.log(
+          `[bundeck:view] received pointer: x=${msg.x.toFixed(3)}, y=${msg.y.toFixed(3)}, active=${msg.active}`,
+        );
+        if (msg.active) {
+          // Only update the target position when active — this prevents the dot
+          // from flying to (0,0) when the pointer leaves the slide area.
+          lastPointerX = msg.x;
+          lastPointerY = msg.y;
+          applyPointer(msg.x, msg.y, true);
+        } else {
+          // Keep the dot at its last valid position, just hide it.
+          // When reactivated the interpolation starts from where it was hidden.
+          isActive = false;
+        }
       }
     };
   }
 
-  // Re-apply pointer position after resize
+  // Keep showing the pointer after resize
   const onResize = () => {
     if (isActive) {
       applyPointer(lastPointerX, lastPointerY, true);
@@ -140,13 +154,20 @@ function setupViewMode(channel: BroadcastChannel | null) {
   };
   window.addEventListener("resize", onResize);
 
-  // Animation loop
+  // Animation loop — smooth position interpolation, instant opacity
+  let frameCount = 0;
   const animate = () => {
     currentX += (targetX - currentX) * INTERPOLATION;
     currentY += (targetY - currentY) * INTERPOLATION;
     laserPointer.style.left = `${currentX}px`;
     laserPointer.style.top = `${currentY}px`;
     laserPointer.style.opacity = isActive ? "1" : "0";
+    frameCount++;
+    if (frameCount % 60 === 0) {
+      console.log(
+        `[bundeck:view] animate: isActive=${isActive}, opacity=${laserPointer.style.opacity}, pos=(${currentX.toFixed(1)}, ${currentY.toFixed(1)})`,
+      );
+    }
     animationFrameId = requestAnimationFrame(animate);
   };
   animationFrameId = requestAnimationFrame(animate);
@@ -166,7 +187,6 @@ function createLaserPointerElement(): HTMLElement {
     pointerEvents: "none",
     zIndex: "9999",
     transform: "translate(-50%, -50%)",
-    transition: "opacity 0.2s",
     opacity: "0",
     userSelect: "none",
   });
@@ -187,6 +207,8 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
   // 2. UI
   const ui = new PresenterUI();
   ui.mount();
+  // Aspect ratio is set via CSS custom properties (--slide-ratio-w / --slide-ratio-h)
+  // injected at build time from the markdown file's frontmatter.
   (window as any).__presenterUI = ui;
 
   // 3. State
@@ -238,45 +260,95 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
 
   let isLaserPointerOn = false;
   let lastPointerSendTime = 0;
+  let wasOverSlideArea = false; // track valid→invalid transition to deactivate view-mode pointer
   const POINTER_INTERVAL = 33; // ~30 fps
 
   const sendPointerUpdate = (x: number, y: number, active: boolean) => {
-    channel?.postMessage({
-      type: "pointer",
-      payload: { x, y, active, timestamp: Date.now() },
-    } as SyncMessage);
+    console.log(
+      `[bundeck] sendPointerUpdate(x=${x.toFixed(3)}, y=${y.toFixed(3)}, active=${active})`,
+    );
+    channel?.postMessage({ type: "pointer", x, y, active } satisfies SyncMessage);
   };
 
   const normalizePointer = (clientX: number, clientY: number) => {
-    const frame = document.querySelector<HTMLIFrameElement>("#presenter-current iframe");
-    if (!frame) return { x: 0.5, y: 0.5, valid: false };
+    const frame = document.querySelector<HTMLElement>("#slide-frame-container");
+    if (!frame) {
+      console.warn("[bundeck] normalizePointer: #slide-frame-container not found");
+      return { x: 0.5, y: 0.5, valid: false };
+    }
+
+    const rect = frame.getBoundingClientRect();
+    console.log(
+      `[bundeck] normalizePointer: rect={left:${rect.left.toFixed(1)}, top:${rect.top.toFixed(1)}, right:${rect.right.toFixed(1)}, bottom:${rect.bottom.toFixed(1)}, w:${rect.width.toFixed(1)}, h:${rect.height.toFixed(1)}}`,
+    );
+    console.log(
+      `[bundeck] normalizePointer: client=(${clientX.toFixed(1)}, ${clientY.toFixed(1)})`,
+    );
+
+    // clientToNormalized clamps to [0,1], so we must check the actual bounding
+    // rect separately — the laser pointer should only show when the cursor
+    // is physically inside the slide frame container.
+    const valid =
+      clientX >= rect.left &&
+      clientX <= rect.right &&
+      clientY >= rect.top &&
+      clientY <= rect.bottom;
+    console.log(`[bundeck] normalizePointer: valid=${valid}`);
 
     const { slideWidth, slideHeight } = getSlideDimensions();
-    const area = computeSlideDisplayArea(frame.getBoundingClientRect(), slideWidth, slideHeight);
+    const area = computeSlideDisplayArea(rect, slideWidth, slideHeight);
+    console.log(
+      `[bundeck] normalizePointer: area={left:${area.left.toFixed(1)}, top:${area.top.toFixed(1)}, w:${area.width.toFixed(1)}, h:${area.height.toFixed(1)}}`,
+    );
     const { x, y } = clientToNormalized(clientX, clientY, area);
-    const valid = x >= 0 && x <= 1 && y >= 0 && y <= 1;
-    return { x, y, valid };
+    return { x, y, valid, area };
   };
 
   const handleMouseMove = (e: MouseEvent) => {
-    const { x, y, valid } = normalizePointer(e.clientX, e.clientY);
+    const { x, y, valid, area } = normalizePointer(e.clientX, e.clientY);
+
+    console.log(
+      `[bundeck] mousemove: valid=${valid}, wasOverSlideArea=${wasOverSlideArea}, isLaserPointerOn=${isLaserPointerOn}`,
+    );
 
     // Update presenter's own cursor overlay
     const presenterUI = (window as any).__presenterUI;
-    if (presenterUI?.updateLaserPointerPosition) {
-      presenterUI.updateLaserPointerPosition(x, y, valid && isLaserPointerOn);
+    if (presenterUI?.updateLaserPointerPosition && area) {
+      const pos = normalizedToClient(x, y, area);
+      presenterUI.updateLaserPointerPosition(pos.x, pos.y, valid && isLaserPointerOn);
     }
 
-    if (isLaserPointerOn && valid) {
-      const now = Date.now();
-      if (now - lastPointerSendTime > POINTER_INTERVAL) {
-        sendPointerUpdate(x, y, true);
-        lastPointerSendTime = now;
+    if (isLaserPointerOn) {
+      if (valid) {
+        const now = Date.now();
+        const elapsed = now - lastPointerSendTime;
+        console.log(
+          `[bundeck] mousemove: valid=true, throttle elapsed=${elapsed}ms, threshold=${POINTER_INTERVAL}ms`,
+        );
+        if (elapsed > POINTER_INTERVAL) {
+          console.log(`[bundeck] mousemove: → sending active:true`);
+          sendPointerUpdate(x, y, true);
+          lastPointerSendTime = now;
+        } else {
+          console.log(`[bundeck] mousemove: → throttled, skipped`);
+        }
+      } else if (wasOverSlideArea) {
+        // Mouse just left the slide area — tell view-mode clients to hide the pointer
+        console.log(
+          `[bundeck] mousemove: valid=false & wasOverSlideArea=true → sending active:false (LEAVE)`,
+        );
+        sendPointerUpdate(0, 0, false);
+      } else {
+        console.log(`[bundeck] mousemove: valid=false & wasOverSlideArea=false → no action`);
       }
+    } else {
+      console.log(`[bundeck] mousemove: laser OFF, skipping`);
     }
+    wasOverSlideArea = valid;
   };
 
   const handleMouseLeave = () => {
+    console.log(`[bundeck] mouseleave: sending active:false`);
     sendPointerUpdate(0, 0, false);
   };
 
@@ -295,14 +367,46 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
   if (slideContainer) slideContainer.style.userSelect = "none";
 
   // Toggle laser pointer
-  (window as any).__togglePresenterPointer = () => {
+  (window as any).__togglePresenterPointer = (clientX?: number, clientY?: number) => {
     isLaserPointerOn = !isLaserPointerOn;
+    console.log(
+      `[bundeck] toggle: now isLaserPointerOn=${isLaserPointerOn}, click=(${clientX}, ${clientY})`,
+    );
     if (isLaserPointerOn) {
-      const { x, y } = normalizePointer(window.innerWidth / 2, window.innerHeight / 2);
-      sendPointerUpdate(x, y, true);
-      lastPointerSendTime = Date.now();
+      // Use the click position if available, otherwise fall back to viewport centre.
+      // We must validate the position so that wasOverSlideArea is correctly initialised;
+      // otherwise the view-mode dot would stay visible after the mouse leaves the slide area
+      // because the deactivation branch (else if (wasOverSlideArea)) would never fire.
+      const mx = clientX ?? window.innerWidth / 2;
+      const my = clientY ?? window.innerHeight / 2;
+      const { x, y, valid, area } = normalizePointer(mx, my);
+      console.log(
+        `[bundeck] toggle: mx=${mx.toFixed(1)}, my=${my.toFixed(1)}, valid=${valid}, normalized=(${x.toFixed(3)}, ${y.toFixed(3)})`,
+      );
+
+      if (valid) {
+        sendPointerUpdate(x, y, true);
+        lastPointerSendTime = Date.now();
+        wasOverSlideArea = true;
+        console.log(`[bundeck] toggle: → sent active:true, wasOverSlideArea=true`);
+      } else {
+        // The cursor is outside the slide display area — do not show the dot yet.
+        // It will appear on the first mousemove that enters the valid area.
+        sendPointerUpdate(0, 0, false);
+        wasOverSlideArea = false;
+        console.log(`[bundeck] toggle: → outside, sent active:false, wasOverSlideArea=false`);
+      }
+
+      // Update the presenter's own overlay
+      const presenterUI = (window as any).__presenterUI;
+      if (presenterUI?.updateLaserPointerPosition && area) {
+        const pos = normalizedToClient(x, y, area);
+        presenterUI.updateLaserPointerPosition(pos.x, pos.y, valid);
+      }
     } else {
       sendPointerUpdate(0, 0, false);
+      console.log(`[bundeck] toggle: → sent active:false (turning OFF)`);
+      // Overlay is hidden via updateLaserPointerStatus below
     }
     const presenterUI = (window as any).__presenterUI;
     if (presenterUI?.updateLaserPointerStatus) {

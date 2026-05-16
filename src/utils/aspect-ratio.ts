@@ -106,11 +106,15 @@ export function isPresetAspectRatio(
 export function generateAspectRatioCSSVariables(aspectRatio?: string): {
   "--slide-width": string;
   "--slide-height": string;
+  "--slide-ratio-w": string;
+  "--slide-ratio-h": string;
 } {
   const dimensions = parseAspectRatio(aspectRatio || "");
 
   return {
     "--slide-width": `${dimensions.width}px`,
     "--slide-height": `${dimensions.height}px`,
+    "--slide-ratio-w": `${dimensions.width}`,
+    "--slide-ratio-h": `${dimensions.height}`,
   };
 }

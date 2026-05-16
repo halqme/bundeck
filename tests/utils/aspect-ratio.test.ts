@@ -86,6 +86,8 @@ describe("Aspect Ratio Utilities", () => {
       expect(result).toEqual({
         "--slide-width": "1280px",
         "--slide-height": "720px",
+        "--slide-ratio-w": "1280",
+        "--slide-ratio-h": "720",
       });
     });
 
@@ -94,6 +96,8 @@ describe("Aspect Ratio Utilities", () => {
       expect(result).toEqual({
         "--slide-width": "960px",
         "--slide-height": "720px",
+        "--slide-ratio-w": "960",
+        "--slide-ratio-h": "720",
       });
     });
 
@@ -102,6 +106,8 @@ describe("Aspect Ratio Utilities", () => {
       expect(result).toEqual({
         "--slide-width": "1280px",
         "--slide-height": "720px",
+        "--slide-ratio-w": "1280",
+        "--slide-ratio-h": "720",
       });
     });
   });

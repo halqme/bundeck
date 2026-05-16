@@ -25,4 +25,4 @@ export interface Slide {
 }
 
 // Sync message types
-export type { SyncMessage, PointerPayload } from "./sync";
+export type { SyncMessage } from "./sync";
