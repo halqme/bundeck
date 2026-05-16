@@ -1,6 +1,6 @@
 {
   "name": "bundeck",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": false,
   "description": "Zero-Config Slide Generator — Write Markdown, get beautiful slides automatically",
   "keywords": [
