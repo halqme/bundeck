@@ -75,8 +75,7 @@ describe("HTMLMinifier", () => {
     });
 
     test("should preserve multiple <pre> blocks", () => {
-      const input =
-        "<div><pre>\n  first\n</pre></div><p>text</p><pre>\n  second\n</pre>";
+      const input = "<div><pre>\n  first\n</pre></div><p>text</p><pre>\n  second\n</pre>";
       expect(minifier.minify(input)).toBe(
         "<div><pre>\n  first\n</pre></div><p>text</p><pre>\n  second\n</pre>",
       );
