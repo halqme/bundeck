@@ -4,7 +4,6 @@ import {
   styledSpanExtension,
   containerExtension,
   styledImageExtension,
-  styledParagraphExtension,
 } from "./extensions";
 import { splitTokensToSlides } from "./splitter";
 import type { Presentation, PresentationMeta } from "../types";
@@ -21,7 +20,6 @@ export class MarkdownParser {
         styledSpanExtension,
         containerExtension,
         styledImageExtension,
-        styledParagraphExtension,
       ],
     });
   }

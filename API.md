@@ -236,14 +236,6 @@ Bundeckは標準のMarkdown構文を拡張しています。
 # Heading {.center}
 ```
 
-#### styledParagraphExtension
-
-段落にスタイルを適用
-
-```typescript
-Paragraph text {.highlight}
-```
-
 #### styledSpanExtension
 
 インライン要素にスタイルを適用
@@ -257,6 +249,10 @@ Text with [highlight]{.mark} here
 コンテナブロック（列、メモ等）
 
 ```markdown
+::: .mark
+段落全体にクラスを適用
+:::
+
 ::: columns
 :::: col
 Left

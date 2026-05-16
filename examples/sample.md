@@ -11,7 +11,9 @@ fontSize: M
 **Zero-Config Slide Generator**
 Markdownを書くだけで、美しいスライドを自動生成します。
 
-[今すぐ始める]{.mark} {.center}
+::: .center 
+[今すぐ始める]{.mark}
+:::
 
 ::: speaker
 スライドの冒頭です。
@@ -37,9 +39,13 @@ Bundeckは設定不要で使い始められるスライド作成ツールです�
 特定の単語を [ハイライト]{.mark} したり、[アクセント]{.accent} をつけたりできます。
 
 ### 段落スタイル
-この段落は中央寄せです。 {.center}
+::: .center
+この段落は中央寄せです。
+:::
 
-この段落は右寄せのキャプションです。 {.caption .right}
+::: .caption .right
+この段落は右寄せのキャプションです。
+:::
 
 ::: speaker
 属性指定は `{.class}` の形式で行います。
@@ -77,19 +83,25 @@ slide.build("presentation.md");
 
 ![Demo Image](https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&q=80){.fit .opacity 80}
 
-`{.fit}` で枠内に収め、`{.opacity 80}` で透明度を調整しています。 {.caption}
+::: .caption
+`{.fit}` で枠内に収め、`{.opacity 80}` で透明度を調整しています。
+:::
 
 ---
 
 ## 🎭 背景画像 (Cover) {.overlay-dim}
 
-`{.cover}` クラスを使用すると、画像を背景として全画面表示します。 {.overlay-dim}
-
 ![Cover Background](https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=80){.cover}
+
+::: .overlay-dim
+`{.cover}` クラスを使用すると、画像を背景として全画面表示します。
+:::
 
 # 背景付きスライド {.center .overlay-dim}
 
-視覚的にインパクトのあるスライドも簡単に作成可能です。 {.center .overlay-dim}
+::: .center .overlay-dim
+視覚的にインパクトのあるスライドも簡単に作成可能です。
+:::
 
 ---
 
@@ -103,7 +115,7 @@ slide.build("presentation.md");
 
 ::: speaker
 この内容はスライド本体には表示されません。
-プレゼンターモード（開発中）で確認できるようになります。
+プレゼンターモードで確認できます。
 :::
 
 ---
@@ -128,4 +140,6 @@ Bundeckを使えば、デザインに悩む時間を減らし、 **「内容を�
 1. `bundeck my-slides.md` でビルド
 2. `bundeck serve my-slides.md` でプレビュー
 
-[Happy Presenting!]{.mark} {.center}
+::: .center
+[Happy Presenting!]{.mark}
+:::
