@@ -55,6 +55,24 @@ describe("HTMLMinifier", () => {
       expect(minifier.minify(input)).toBe("<div>text</div>");
     });
 
+    test("should preserve whitespace inside <pre> tags", () => {
+      const input = "<div><pre>\n  line1\n  line2\n</pre></div>";
+      expect(minifier.minify(input)).toBe("<div><pre>\n  line1\n  line2\n</pre></div>");
+    });
+
+    test("should preserve <pre> with attributes", () => {
+      const input = '<pre class="prettyprint">\n  code\n</pre>';
+      expect(minifier.minify(input)).toBe('<pre class="prettyprint">\n  code\n</pre>');
+    });
+
+    test("should preserve multiple <pre> blocks", () => {
+      const input =
+        "<div><pre>\n  first\n</pre></div><p>text</p><pre>\n  second\n</pre>";
+      expect(minifier.minify(input)).toBe(
+        "<div><pre>\n  first\n</pre></div><p>text</p><pre>\n  second\n</pre>",
+      );
+    });
+
     test("should handle complex html structure", () => {
       const input = `
             <!DOCTYPE html>

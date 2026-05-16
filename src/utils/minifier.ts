@@ -21,11 +21,22 @@ export class HTMLMinifier {
 
   /**
    * Minify HTML string by removing unnecessary whitespace and comments
+   * Preserves whitespace and formatting inside <pre> tags.
    * Note: This is a basic minifier - for advanced minification, consider using html-minifier-terser
    */
   minify(html: string): string {
+    // Preserve <pre> tag contents to avoid destroying formatted whitespace
+    const preBlocks: string[] = [];
+    const placeholder = "___PRE_BLOCK_";
+    const preTagRegex = /<pre\b[^>]*>[\s\S]*?<\/pre>/gi;
+
+    const htmlWithPlaceholders = html.replace(preTagRegex, (match) => {
+      const index = preBlocks.push(match) - 1;
+      return `${placeholder}${index}___`;
+    });
+
     return (
-      html
+      htmlWithPlaceholders
         // Remove HTML comments except for conditional comments
         .replace(/<!--(?!\s*\[if)[\s\S]*?-->/g, "")
         // Remove whitespace between tags
@@ -36,6 +47,11 @@ export class HTMLMinifier {
         .replace(/\n+/g, "")
         // Remove tabs
         .replace(/\t/g, "")
+        // Restore original <pre> block contents
+        .replace(/___PRE_BLOCK_\d+___/g, (match) => {
+          const index = parseInt(match.slice(placeholder.length, -3), 10);
+          return preBlocks[index] || "";
+        })
     );
   }
 
