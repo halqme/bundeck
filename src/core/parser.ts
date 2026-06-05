@@ -9,6 +9,53 @@ import { splitTokensToSlides } from "./splitter";
 import type { Presentation, PresentationMeta } from "../types";
 import { consoleWarn } from "../cli/utils";
 
+function parseScalarValue(value: string): unknown {
+  const trimmed = value.trim();
+
+  if (trimmed === "") {
+    return "";
+  }
+
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+
+  if (trimmed === "true") {
+    return true;
+  }
+
+  if (trimmed === "false") {
+    return false;
+  }
+
+  if (/^-?\d+(?:\.\d+)?$/.test(trimmed)) {
+    return Number(trimmed);
+  }
+
+  return trimmed;
+}
+
+function parseSimpleFrontmatter(yamlPart: string): Record<string, unknown> {
+  const data: Record<string, unknown> = {};
+
+  for (const line of yamlPart.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (trimmed === "" || trimmed.startsWith("#")) {
+      continue;
+    }
+
+    const match = line.match(/^\s*([A-Za-z0-9_-]+)\s*:\s*(.*)$/);
+    if (match) {
+      data[match[1]!] = parseScalarValue(match[2] ?? "");
+    }
+  }
+
+  return data;
+}
+
 export class MarkdownParser {
   private markedInstance: Marked;
 
@@ -26,7 +73,7 @@ export class MarkdownParser {
 
   /**
    * Extract frontmatter data and content from raw markdown.
-   * Uses Bun.YAML for parsing.
+   * Uses Bun.YAML when available and falls back to a small scalar parser.
    */
   private extractFrontmatter(raw: string): { data: Record<string, any>; content: string } {
     const trimmed = raw.trim();
@@ -42,7 +89,12 @@ export class MarkdownParser {
       try {
         const yamlPart = match[1]!;
         const contentPart = match[2]!;
-        const data = (Bun.YAML.parse(yamlPart) as Record<string, any>) || {};
+        const bunWithYaml = Bun as typeof Bun & {
+          YAML?: { parse: (input: string) => unknown };
+        };
+        const data = bunWithYaml.YAML?.parse
+          ? ((bunWithYaml.YAML.parse(yamlPart) as Record<string, any>) ?? {})
+          : parseSimpleFrontmatter(yamlPart);
         return { data, content: contentPart };
       } catch (e) {
         consoleWarn(`Failed to parse YAML frontmatter: ${(e as Error).message}`);
