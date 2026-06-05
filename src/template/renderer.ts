@@ -16,6 +16,25 @@ import { themes, styles } from "./styles";
 // Constants
 const DEFAULT_TITLE = "Untitled Presentation";
 const DEFAULT_THEME = "default";
+const FONT_SIZE_PRESETS = new Set(["xs", "s", "m", "l", "xl"]);
+
+function escapeHTML(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function getFontSizeClass(fontSize: PresentationMeta["fontSize"]): string {
+  if (typeof fontSize !== "string") {
+    return "";
+  }
+
+  const normalized = fontSize.toLowerCase();
+  return FONT_SIZE_PRESETS.has(normalized) ? "font-size-" + normalized : "";
+}
 
 export class HTMLRenderer {
   private markedInstance: Marked;
@@ -102,9 +121,9 @@ export class HTMLRenderer {
     aspectRatioCSS: Record<string, string>;
   } {
     return {
-      title: meta.title ?? DEFAULT_TITLE,
-      theme: meta.theme ?? DEFAULT_THEME,
-      fontSize: meta.fontSize ? "font-size-" + meta.fontSize.toLowerCase() : "",
+      title: typeof meta.title === "string" ? meta.title : DEFAULT_TITLE,
+      theme: typeof meta.theme === "string" ? meta.theme : DEFAULT_THEME,
+      fontSize: getFontSizeClass(meta.fontSize),
       aspectRatioCSS: generateAspectRatioCSSVariables(meta.aspectRatio),
     };
   }
@@ -321,7 +340,7 @@ export class HTMLRenderer {
 
     return (
       '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' +
-      config.title +
+      escapeHTML(config.title) +
       "</title>" +
       headContent +
       "</head><body" +
