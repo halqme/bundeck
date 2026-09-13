@@ -1,5 +1,5 @@
-import { SlideNavigator } from "./navigator";
-import { getSlideDimensions } from "./geometry";
+import { SlideNavigator } from "./navigator.js";
+import { getSlideDimensions } from "./geometry.js";
 
 export interface ViewRuntimeOptions {
   /**
@@ -62,12 +62,21 @@ export function createViewRuntime(options: ViewRuntimeOptions = {}): ViewRuntime
 
   // --- Keyboard navigation ---
   document.addEventListener("keydown", (e) => {
+    const target = e.target;
+    if (
+      target instanceof HTMLElement &&
+      target.closest("button, a, input, select, textarea, [contenteditable]")
+    ) {
+      return;
+    }
+
     switch (e.key) {
       case "ArrowRight":
       case "Space":
+      case " ":
       case "Enter":
       case "n":
-        if (e.key === "Space") e.preventDefault();
+        if (e.key === "Space" || e.key === " ") e.preventDefault();
         navigator.next();
         break;
       case "ArrowLeft":

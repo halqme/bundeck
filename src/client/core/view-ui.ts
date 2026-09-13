@@ -1,4 +1,4 @@
-import { SlideNavigator } from "./navigator";
+import { SlideNavigator } from "./navigator.js";
 
 /**
  * Options for setting up view mode UI enhancements.
@@ -40,23 +40,14 @@ export function addContextMenuItem(
   if (!menu) return;
 
   const sep = document.createElement("hr");
+  sep.setAttribute("role", "separator");
   menu.appendChild(sep);
 
-  const item = document.createElement("div");
-  item.className = "vnav-context-item";
-  item.textContent = label;
-
-  if (options?.shortcut) {
-    const shortcutSpan = document.createElement("span");
-    shortcutSpan.className = "shortcut";
-    shortcutSpan.textContent = options.shortcut;
-    item.appendChild(shortcutSpan);
-  }
-
-  item.onclick = () => {
+  const item = createContextMenuButton(label, options?.shortcut);
+  item.addEventListener("click", () => {
     action();
-    menu.style.display = "none";
-  };
+    hideContextMenu(menu);
+  });
 
   menu.appendChild(item);
 }
@@ -64,20 +55,23 @@ export function addContextMenuItem(
 // ─── Navigation Buttons ────────────────────────────────────────────
 
 function createNavigationButtons(navigator: SlideNavigator, onNavigate?: () => void) {
-  const container = document.createElement("div");
+  const container = document.createElement("nav");
   container.id = "vnav-buttons";
+  container.setAttribute("aria-label", "スライドナビゲーション");
 
   const prevBtn = document.createElement("button");
+  prevBtn.type = "button";
   prevBtn.id = "vnav-prev";
   prevBtn.title = "前のスライド (←)";
   prevBtn.setAttribute("aria-label", "前のスライド");
-  prevBtn.innerHTML = "‹";
+  prevBtn.textContent = "‹";
 
   const nextBtn = document.createElement("button");
+  nextBtn.type = "button";
   nextBtn.id = "vnav-next";
   nextBtn.title = "次のスライド (→)";
   nextBtn.setAttribute("aria-label", "次のスライド");
-  nextBtn.innerHTML = "›";
+  nextBtn.textContent = "›";
 
   container.appendChild(prevBtn);
   container.appendChild(nextBtn);
@@ -86,6 +80,7 @@ function createNavigationButtons(navigator: SlideNavigator, onNavigate?: () => v
   // Hover trigger area (sibling before #vnav-buttons for CSS + selector)
   const hoverArea = document.createElement("div");
   hoverArea.id = "vnav-hover-area";
+  hoverArea.setAttribute("aria-hidden", "true");
   document.body.insertBefore(hoverArea, container);
 
   const navigate = (fn: () => void) => {
@@ -116,6 +111,9 @@ function createContextMenu(navigator: SlideNavigator, onNavigate?: () => void) {
   const menu = document.createElement("div");
   menu.id = "vnav-context-menu";
   menu.style.display = "none";
+  menu.setAttribute("role", "menu");
+  menu.setAttribute("aria-label", "スライド操作");
+  menu.setAttribute("aria-hidden", "true");
   document.body.appendChild(menu);
 
   const menuItems: ContextMenuItem[] = [
@@ -162,55 +160,116 @@ function createContextMenu(navigator: SlideNavigator, onNavigate?: () => void) {
   menuItems.forEach((item) => {
     if (item.action === null) {
       const sep = document.createElement("hr");
+      sep.setAttribute("role", "separator");
       menu.appendChild(sep);
     } else {
-      const div = document.createElement("div");
-      div.className = "vnav-context-item";
-      div.textContent = item.label!;
-
-      if (item.shortcut) {
-        const shortcutSpan = document.createElement("span");
-        shortcutSpan.className = "shortcut";
-        shortcutSpan.textContent = item.shortcut;
-        div.appendChild(shortcutSpan);
-      }
-
-      div.onclick = () => {
+      const button = createContextMenuButton(item.label!, item.shortcut);
+      button.addEventListener("click", () => {
         item.action!();
-        menu.style.display = "none";
-      };
-
-      menu.appendChild(div);
+        hideContextMenu(menu);
+      });
+      menu.appendChild(button);
     }
   });
 
-  // Show menu on right-click
+  let restoreFocus: HTMLElement | null = null;
+  const closeMenu = (restoreTriggerFocus: boolean) => {
+    hideContextMenu(menu);
+    if (restoreTriggerFocus) restoreFocus?.focus();
+    restoreFocus = null;
+  };
+
+  // Show menu on right-click.
   document.addEventListener("contextmenu", (e) => {
     e.preventDefault();
+    restoreFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     showContextMenu(menu, e.clientX, e.clientY);
   });
 
-  // Hide on click outside
+  // Hide on click outside.
   document.addEventListener("click", (e) => {
     if (menu.style.display !== "none" && !menu.contains(e.target as Node)) {
-      menu.style.display = "none";
+      closeMenu(false);
     }
   });
 
-  // Hide on Escape
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && menu.style.display !== "none") {
-      menu.style.display = "none";
-    }
-  });
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      const isMenuOpen = menu.style.display !== "none";
+
+      if (!isMenuOpen && (e.key === "ContextMenu" || (e.key === "F10" && e.shiftKey))) {
+        e.preventDefault();
+        e.stopPropagation();
+        restoreFocus =
+          document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        const rect = restoreFocus?.getBoundingClientRect();
+        showContextMenu(
+          menu,
+          rect?.left ?? window.innerWidth / 2,
+          rect?.bottom ?? window.innerHeight / 2,
+        );
+        return;
+      }
+
+      if (!isMenuOpen) return;
+      e.stopPropagation();
+
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeMenu(true);
+        return;
+      }
+
+      const items = Array.from(menu.querySelectorAll<HTMLButtonElement>('[role="menuitem"]'));
+      const currentIndex = items.indexOf(document.activeElement as HTMLButtonElement);
+      let nextIndex: number | null = null;
+
+      if (e.key === "ArrowDown") nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+      if (e.key === "ArrowUp") nextIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+      if (e.key === "Home") nextIndex = 0;
+      if (e.key === "End") nextIndex = items.length - 1;
+
+      if (nextIndex !== null) {
+        e.preventDefault();
+        items[nextIndex]?.focus();
+      }
+    },
+    true,
+  );
+}
+
+function createContextMenuButton(label: string, shortcut?: string): HTMLButtonElement {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "vnav-context-item";
+  button.setAttribute("role", "menuitem");
+  button.tabIndex = -1;
+  button.textContent = label;
+
+  if (shortcut) {
+    const shortcutSpan = document.createElement("span");
+    shortcutSpan.className = "shortcut";
+    shortcutSpan.textContent = shortcut;
+    shortcutSpan.setAttribute("aria-hidden", "true");
+    button.appendChild(shortcutSpan);
+  }
+
+  return button;
+}
+
+function hideContextMenu(menu: HTMLElement) {
+  menu.style.display = "none";
+  menu.setAttribute("aria-hidden", "true");
 }
 
 function showContextMenu(menu: HTMLElement, x: number, y: number) {
   menu.style.display = "block";
+  menu.setAttribute("aria-hidden", "false");
   menu.style.left = `${x}px`;
   menu.style.top = `${y}px`;
 
-  // Reposition if off-screen
+  // Reposition if off-screen.
   const rect = menu.getBoundingClientRect();
   if (rect.right > window.innerWidth) {
     menu.style.left = `${window.innerWidth - rect.width - 8}px`;
@@ -218,6 +277,8 @@ function showContextMenu(menu: HTMLElement, x: number, y: number) {
   if (rect.bottom > window.innerHeight) {
     menu.style.top = `${window.innerHeight - rect.height - 8}px`;
   }
+
+  menu.querySelector<HTMLButtonElement>('[role="menuitem"]')?.focus();
 }
 
 function promptGoToSlide(navigator: SlideNavigator, onNavigate?: () => void) {
