@@ -55,7 +55,7 @@ export async function generateSlides(
   }
 
   // Load runtime
-  const runtimePath = fileURLToPath(new URL("./client/runtime-static.ts", import.meta.url));
+  const runtimePath = fileURLToPath(new URL("./client/runtime-view.ts", import.meta.url));
   const buildResult = await Bun.build({
     entrypoints: [runtimePath],
     target: "browser",
@@ -103,7 +103,7 @@ export async function generateHTML(
   }
 
   // Load runtime
-  const runtimePath = fileURLToPath(new URL("./client/runtime-static.ts", import.meta.url));
+  const runtimePath = fileURLToPath(new URL("./client/runtime-view.ts", import.meta.url));
   const buildResult = await Bun.build({
     entrypoints: [runtimePath],
     target: "browser",

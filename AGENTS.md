@@ -1,103 +1,132 @@
 # AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Bundeck の開発エージェント向けガイド。Bun と TypeScript で Markdown から HTML スライドを生成するプロジェクトです。
 
-## 実行手順
+## 作業ルール
 
-1. `bun run check` を実行して品質チェックとエラー修正を行う。
+- プロジェクトに関する応答とドキュメントは日本語で書く。
+- 変更前に `bun run check` を実行する。
+- 変更後は `bun run check` と、変更箇所に関係するテストを実行する。
+- `dist/` は生成物なので、原則として直接編集しない。
+- 公開 API や Markdown 構文を変更するときは、実装・テスト・`docs/API.md` の内容をそろえる。
+- コミットする場合は、変更内容が分かる簡潔なコミットメッセージにする。
 
-### 例
+## 開発コマンド
 
 ```bash
-# 変更をコミットする場合
+# 依存関係をインストール
+bun install
+
+# CLI をビルド
+bun run build
+
+# フォーマット、Lint、型チェック
 bun run check
+
+# 個別のチェック
+bun run format
+bun run format:check
+bun run lint
+bun run type-check
+
+# テスト
+bun test
+bun test tests/parser.test.ts
 ```
 
-### 注意事項
+## CLI の使い方
 
-- コミットメッセージは明確で簡潔に記述すること。
-- 変更前に必ず `bun run check` を実行してください。
+ビルド済み CLI または npm パッケージの CLI を使う。
 
-## Common Development Commands
+```bash
+# Markdown から静的 HTML を生成（既定では入力ファイルと同じ場所に .html を出力）
+bundeck presentation.md
 
-- **Build / Check**: `bun run check && bun run lint && bun run format`
-- **Run Test Suite**: `bun test`
-- **Run a Single Test**: `bun test path/to/file.test.ts`
-- **Watch Mode (if available)**: `bun test --watch`
-- **Update Snapshots**: `bun test --update-snapshots`
-- **Install Dependencies**: `bun install`
+# 出力先を指定
+bundeck presentation.md --output slides.html
 
-These commands are the primary workflow for development, ensuring code quality and correctness.
+# HTML/CSS を圧縮
+bundeck presentation.md --minify
 
-## High‑Level Architecture
+# 生成後にブラウザで開く
+bundeck presentation.md --auto-open
 
-The project is a **Markdown‑to‑HTML slide generator** built with Bun and TypeScript. The main components are:
-
-1. **`src/client/runtime-view.ts`** – View-mode runtime for static builds (`bundeck build`). Thin wrapper around `createViewRuntime()` + `setupViewUI()`.
-2. **`src/client/runtime-server.ts`** – Server-mode runtime for `bundeck serve`. Handles both view mode and presenter mode dispatch via `window.location.pathname`.
-3. **`src/client/core/`** – Shared browser-side modules:
-   - `navigator.ts` – `SlideNavigator` class: slide transitions, text scaling, container transform.
-   - `runtime-core.ts` – `createViewRuntime()`: wires up navigator, keyboard nav, hash routing, viewport scaling, and resize handling in one call.
-   - `view-ui.ts` – `setupViewUI()`: floating hover nav buttons (`‹` `›`) at bottom-right and custom right-click context menu.
-   - `geometry.ts` – Slide display‑area math: aspect‑ratio‑aware letterboxing, coordinate normalisation, laser‑pointer size calculation. Used by both view and presenter modes.
-   - `types.ts` – `NavigatorOptions` interface.
-4. **`src/client/presenter/`** – Presenter UI components and styles (dashboard, timer, notes, laser pointer controls).
-5. **`src/core/parser.ts`** – Wraps the `marked` library, registers custom markdown extensions, parses front‑matter, tokenizes the markdown and delegates slide splitting.
-6. **`src/core/splitter.ts`** – Converts the flat token stream from `marked` into an array of `Slide` objects, separating content and speaker notes (via `::: speaker` containers) and handling horizontal rules (`---`) as slide delimiters.
-7. **`src/core/extensions/*`** – Custom `marked` extensions for styled headings, spans, images, paragraphs, and container blocks. They provide additional syntax such as `[text]{.class}` and `::: container` blocks.
-8. **`src/core/layout-design.ts`** – Layout design utilities for slide formatting.
-9. **`src/server/generator.ts`** – Generates the final HTML document. It bundles CSS themes, utility styles, and transpiles the TypeScript runtime to JavaScript using `Bun.Transpiler`. Slides are rendered with `marked` and embedded into a simple HTML template.
-10. **`src/template/renderer.ts`** – Template rendering utilities.
-11. **Types (`src/types/*.ts`)** – Define the `Presentation`, `Slide`, and meta data structures used across the pipeline.
-
-The **view-mode** flow is:
-
-```
-Markdown source → MarkdownParser (marked + extensions) → Token stream
- → splitTokensToSlides (splitter) → Presentation object
- → HTMLGenerator → index.html (bundled with CSS & runtime)
-                                       ↓
-                              runtime-view.ts  (static build)
-                           or runtime-server.ts (server, path‑based dispatch)
-                                       ↓
-                           createViewRuntime() + setupViewUI()
-                           ↓           ↓            ↓
-                     SlideNavigator  keyboard    viewport
-                     (slides, hash)   nav        scaling
+# 開発サーバー（HMR 対応）
+bundeck serve presentation.md
+bundeck serve presentation.md --port 8080
 ```
 
-The **presenter-mode** flow (server only):
+ローカルで実行する場合は、ビルド後に `bun run dist/cli.js` を使う。
 
-```
-Presenter UI (dashboard)
-  ├── iframe (current slide, ?role=preview#N)  ← BroadcastChannel sync
-  ├── iframe (next slide preview)
-  ├── speaker notes
-  ├── laser pointer (mouse → normalized → geometry.ts → clients)
-  └── controls (prev / next / laser toggle / open view ↗)
-```
+## プレゼンテーションの Markdown
 
-## Project Structure
+先頭に YAML frontmatter を置ける。主な項目は `title`、`theme`、`mode`、`aspectRatio`、`fontSize` で、その他の項目もメタデータとして保持される。
 
-- `src/cli/` – Command-line interface and builder utilities.
-- `src/client/` – Runtime code executed in the browser.
-  - `src/client/core/` – Shared core modules (navigator, runtime-core, view-ui, geometry).
-  - `src/client/presenter/` – Presenter UI and styles.
-- `src/core/` – Parsing, token splitting, markdown extensions, and layout design.
-- `src/server/` – Server-side HTML generation.
-- `src/template/` – Template rendering utilities.
-- `src/types/` – Shared TypeScript interfaces.
-- `styles/` – CSS themes and utilities used by the generator.
-- `tests/` – Test suites for all components.
+```markdown
+---
+title: My Presentation
+theme: default
+aspectRatio: 16:9
+fontSize: M
+---
 
-## Helpful Tips for Claude Code
+# Slide 1
 
-- When adding new markdown syntax, extend the appropriate extension under `src/core/extensions` and ensure the parser registers it.
-- If you need to expose additional slide metadata, modify `src/core/parser.ts` where the `PresentationMeta` object is built.
-- For changes affecting the client runtime, update `src/client/runtime-view.ts` (static) or `src/client/runtime-server.ts` (server). If the change is shared between both, consider putting it in `src/client/core/runtime-core.ts`.
-- The geometry module (`src/client/core/geometry.ts`) handles all aspect-ratio-aware coordinate math. If you need to map coordinates between the presenter's iframe and the view mode, use this module.
-- Output MUST BE in Japanese.
+Content...
 
 ---
 
-_Generated by Claude Code._
+# Slide 2
+
+More content...
+```
+
+組み込みの拡張構文は次のとおり。
+
+- `---`：スライドを分割する。
+- `::: speaker ... :::`：聴衆には表示しないスピーカーノートを付ける。
+- `::: columns ... :::`：カラムレイアウトを作る。
+- `{.class-name}`：見出し、インライン要素、画像などに CSS クラスを付ける。
+
+API の詳細は [`docs/API.md`](docs/API.md) を参照する。
+
+## アーキテクチャ
+
+- **`src/cli.ts`**：Bun から起動される CLI エントリーポイント。
+- **`src/cli/`**：引数処理、静的ビルド、CLI の表示・エラー処理。
+- **`src/core/parser.ts`**：frontmatter を取り出し、`marked` で Markdown をトークン化する。
+- **`src/core/splitter.ts`**：トークン列を `Presentation` と `Slide[]` に分割し、本文とノートを分離する。
+- **`src/core/extensions/`**：見出し、インライン要素、画像、コンテナの Markdown 拡張。
+- **`src/core/layout-design.ts`**：コンテンツ量に応じたスライドのレイアウト調整。
+- **`src/template/renderer.ts`**：スライド、CSS、ランタイムから HTML を組み立てる。
+- **`src/template/styles.ts`**：テーマと CSS アセットの対応を定義する。
+- **`src/styles/`**：共通 CSS、印刷用 CSS、view UI、`default` / `dark` テーマ。
+- **`src/client/runtime-view.ts`**：静的 HTML 用の view runtime エントリーポイント。
+- **`src/client/runtime-server.ts`**：開発サーバー用の view / presenter runtime。
+- **`src/client/core/`**：スライド移動、ハッシュルーティング、ビューポート調整、view UI、座標計算。
+- **`src/client/presenter/`**：プレゼンター画面、タイマー、ノート、レーザーポインター。
+- **`src/server/index.ts`**：Markdown の監視、HMR、HTML とアセットの配信。
+- **`src/server/generator.ts`**：サーバー用ランタイムをバンドルして HTML を生成する。
+- **`src/types/`**：`Presentation`、`Slide`、同期メッセージなどの共有型。
+- **`tests/`**：CLI、パーサー、拡張、ランタイム関連のテスト。
+
+### 生成フロー
+
+```text
+Markdown
+  → MarkdownParser（frontmatter + marked）
+  → splitTokensToSlides
+  → Presentation
+  → HTMLRenderer + クライアント runtime
+  → HTML
+```
+
+view mode は `runtime-view.ts` と `src/client/core/` を使う。serve mode は `/` を view mode、`/presenter` を presenter mode として配信し、`BroadcastChannel` でスライド位置とレーザーポインターを同期する。
+
+## 変更時の指針
+
+- 新しい Markdown 構文は `src/core/extensions/` に実装し、`src/core/extensions/index.ts` と parser / renderer の登録を確認する。
+- frontmatter の項目を増やすときは `src/core/parser.ts` と共有型、HTML 生成側の扱いを確認する。
+- view と presenter の両方に関係するランタイム変更は、まず `src/client/core/` に共通化できるか検討する。
+- スライド表示領域や presenter からの座標変換は `src/client/core/geometry.ts` に集約する。
+- UI やランタイムを変更したら、該当テストに加えて必要なら `bun run build` で実際のバンドルも確認する。
