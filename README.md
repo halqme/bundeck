@@ -78,6 +78,24 @@ Write slides in Markdown.
 
 See the [user guide](docs/guide.md) for the complete syntax reference.
 
+## Programmatic API
+
+Bun applications can generate HTML directly and override presentation settings in code.
+
+```typescript
+import { generateSlides } from "bundeck";
+
+const html = await generateSlides("# Hello", {
+  title: "My Presentation",
+  theme: "dark",
+  aspectRatio: "16:9",
+  lang: "en",
+  outputPath: "slides.html",
+});
+```
+
+See the [API reference](docs/API.md) for all available options.
+
 ## Documentation
 
 - [Documentation index](docs/README.md)
@@ -85,6 +103,9 @@ See the [user guide](docs/guide.md) for the complete syntax reference.
 - [API reference](docs/API.md) — Functions, types, and extensions for Bun
 - [Developer guide](docs/development.md) — Setup, checks, and project structure
 - [Sample presentation](examples/sample.md) — A presentation demonstrating Bundeck features
+- [Changelog](CHANGELOG.md)
+- [Contributing guide](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
 
 ## Development
 
@@ -93,6 +114,7 @@ bun install
 bun run check
 bun test
 bun run build
+bun run verify:package
 ```
 
 See the [developer guide](docs/development.md) for detailed development instructions.

@@ -2,7 +2,7 @@
 
 ## Development environment
 
-- Bun 1.3.13 or later
+- Bun 1.4.0 or later
 - TypeScript
 
 Install the dependencies with:
@@ -18,9 +18,11 @@ Run the basic checks before and after making changes.
 ```bash
 bun run check
 bun test
+bun run build
+bun run verify:package
 ```
 
-`bun run check` runs formatting, linting, and type checking in sequence. To run a specific test file, pass its path to Bun.
+`bun run check` runs formatting, linting, and type checking in sequence. `bun run verify:package` checks the files and entry points included in the npm package. To run a specific test file, pass its path to Bun.
 
 ```bash
 bun test tests/parser.test.ts
@@ -47,9 +49,12 @@ bundeck/
 │   ├── server/           # Development server and HTML generation
 │   ├── template/         # HTML templates and CSS assets
 │   ├── styles/           # Shared CSS and themes
-│   └── types/            # Shared types and synchronization messages
+│   ├── types/            # Shared types and synchronization messages
+│   ├── config.ts         # Programmatic presentation configuration
+│   └── version.ts        # Package version export
 ├── tests/                # CLI, core, extension, and integration tests
 ├── docs/                 # User, API, and developer documentation
+├── scripts/              # Build and package verification scripts
 └── examples/             # Sample presentations
 ```
 
@@ -64,7 +69,7 @@ Markdown
   → HTML
 ```
 
-The static CLI build bundles `src/client/runtime-view.ts` for the browser. The development server bundles `src/client/runtime-server.ts`.
+The build produces CLI and programmatic API bundles, TypeScript declarations, and prebuilt browser runtimes under `dist/runtime/`. The static CLI uses `runtime-view`; the development server uses `runtime-server`.
 
 ## Change guidelines
 

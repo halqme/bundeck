@@ -15,7 +15,7 @@
 
 ## Installation
 
-Install Bun 1.3.13 or later.
+Install Bun 1.4.0 or later.
 
 ```bash
 bun add --dev bundeck
@@ -70,7 +70,8 @@ View mode is available in a statically generated HTML file and at `/` when using
 - `End`: Last slide
 - URL `#N`: Open slide N
 - Move the pointer to the bottom-right corner: Show previous/next buttons
-- Right-click: Open the slide navigation menu
+- Right-click, Context Menu key, or `Shift+F10`: Open the slide navigation menu
+- In the context menu, use `↑`/`↓`, `Home`, `End`, and `Escape` to navigate and close it
 
 In server view mode, the context menu also includes an option to open presenter mode.
 
@@ -82,6 +83,7 @@ Open `/presenter` while `bundeck serve` is running. Presenter mode shows the cur
 - Clock and elapsed-time timer with pause, resume, and reset controls
 - Laser pointer
 - Button to open view mode in a new tab
+- Keyboard-accessible timer and slide controls
 - Synchronization with view mode through `BroadcastChannel`
 
 ## Markdown syntax
@@ -97,6 +99,7 @@ You can add YAML frontmatter at the beginning of a file.
 title: My Presentation
 theme: dark
 mode: auto
+lang: ja
 aspectRatio: 16:9
 fontSize: M
 ---
@@ -107,6 +110,7 @@ fontSize: M
 | `title`       | The HTML title. Defaults to `Untitled Presentation`.                                                   |
 | `theme`       | The theme name. Built-in themes are `default` and `dark`. Defaults to `default`.                       |
 | `mode`        | Metadata with the value `light`, `dark`, or `auto`. Built-in theme selection is controlled by `theme`. |
+| `lang`        | The generated HTML language. Defaults to `en`.                                                         |
 | `aspectRatio` | An aspect ratio in `width:height` format. Defaults to `16:9`.                                          |
 | `fontSize`    | A font-size preset: `XS`, `S`, `M`, `L`, or `XL`.                                                      |
 
@@ -188,6 +192,8 @@ Specify values for `opacity` and `gray` as follows. If the value is omitted, `50
 ```
 
 Custom class names are also emitted, but you must provide the corresponding CSS yourself.
+
+Image `src`, `alt`, and title attributes are escaped when rendered. Only relative URLs, `http(s)` URLs, and `data:image/...` URLs are accepted; other URL schemes are omitted.
 
 ### Speaker notes
 

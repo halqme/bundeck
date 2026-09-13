@@ -9,10 +9,12 @@ import { generateSlides, parseSlides } from "bundeck";
 ## Contents
 
 - [HTML generation](#html-generation)
+- [Programmatic configuration](#programmatic-configuration)
 - [Markdown parsing](#markdown-parsing)
 - [Low-level HTML rendering](#low-level-html-rendering)
 - [CLI API](#cli-api)
 - [Extensions and types](#extensions-and-types)
+- [Version](#version)
 - [Logging](#logging)
 
 ## HTML generation
@@ -22,24 +24,21 @@ import { generateSlides, parseSlides } from "bundeck";
 Parses a Markdown string and generates an HTML string containing the view-mode runtime.
 
 ```typescript
-async function generateSlides(
-  markdown: string,
-  options?: {
-    theme?: string;
-    title?: string;
-    outputPath?: string;
-  },
-): Promise<string>;
+async function generateSlides(markdown: string, options?: GenerateOptions): Promise<string>;
 ```
 
-| Argument             | Description                                                                                       |
-| -------------------- | ------------------------------------------------------------------------------------------------- |
-| `markdown`           | The Markdown source for the slides.                                                               |
-| `options.theme`      | The theme name. Built-in themes are `default` and `dark`.                                         |
-| `options.title`      | Overrides the HTML title.                                                                         |
-| `options.outputPath` | Not used by the current implementation. To save the file, pass the returned value to `Bun.write`. |
+| Argument              | Description                                                                            |
+| --------------------- | -------------------------------------------------------------------------------------- |
+| `markdown`            | The Markdown source for the slides.                                                    |
+| `options.theme`       | The theme name. Built-in themes are `default` and `dark`.                              |
+| `options.title`       | Overrides the HTML title.                                                              |
+| `options.mode`        | Sets the presentation mode metadata (`light`, `dark`, or `auto`).                      |
+| `options.aspectRatio` | Overrides the slide aspect ratio, such as `16:9` or `4:3`.                             |
+| `options.fontSize`    | Overrides the font-size preset (`XS`, `S`, `M`, `L`, or `XL`).                         |
+| `options.lang`        | Sets the generated document language. Defaults to `en`.                                |
+| `options.outputPath`  | Also writes the returned HTML to this path, creating its parent directory when needed. |
 
-`generateSlides` returns an HTML string and does not write a file.
+`generateSlides` always returns the generated HTML string. When `outputPath` is provided, it also writes that string to disk.
 
 ```typescript
 import { generateSlides } from "bundeck";
@@ -47,9 +46,8 @@ import { generateSlides } from "bundeck";
 const html = await generateSlides("# First slide\n\n---\n\n# Next slide", {
   title: "My Presentation",
   theme: "dark",
+  outputPath: "slides.html",
 });
-
-await Bun.write("slides.html", html);
 ```
 
 ### `generateHTML`
@@ -59,14 +57,11 @@ Generates an HTML string from a parsed `Presentation`.
 ```typescript
 async function generateHTML(
   presentation: Presentation,
-  options?: {
-    theme?: string;
-    title?: string;
-  },
+  options?: GenerateHTMLOptions,
 ): Promise<string>;
 ```
 
-When `options.theme` or `options.title` is provided, the corresponding values in `presentation.meta` are overridden before generation.
+`GenerateHTMLOptions` supports `title`, `theme`, `mode`, `aspectRatio`, `fontSize`, and `lang`. The corresponding values in `presentation.meta` are overridden before generation.
 
 ```typescript
 import { generateHTML, parseMarkdown } from "bundeck";
@@ -76,6 +71,24 @@ presentation.meta.title = "Updated title";
 
 const html = await generateHTML(presentation, { theme: "default" });
 ```
+
+### Programmatic configuration
+
+```typescript
+interface GenerateOptions {
+  title?: string;
+  theme?: string;
+  mode?: "light" | "dark" | "auto";
+  aspectRatio?: string;
+  fontSize?: "XS" | "S" | "M" | "L" | "XL";
+  lang?: string;
+  outputPath?: string;
+}
+
+type GenerateHTMLOptions = Omit<GenerateOptions, "outputPath">;
+```
+
+`DEFAULT_PRESENTATION_CONFIG` contains the default title, theme, aspect ratio, and document language.
 
 ## Markdown parsing
 
@@ -228,6 +241,7 @@ interface Presentation {
 ```typescript
 interface PresentationMeta {
   title?: string;
+  lang?: string;
   theme?: string;
   mode?: "light" | "dark" | "auto";
   aspectRatio?: string;
@@ -258,6 +272,17 @@ The type used to synchronize server view mode and presenter mode.
 ```typescript
 type SyncMessage =
   { type: "navigate"; index: number } | { type: "pointer"; x: number; y: number; active: boolean };
+```
+
+## Version
+
+The package version is available without duplicating it in application code.
+
+```typescript
+import { VERSION, getVersion } from "bundeck";
+
+console.log(VERSION);
+console.log(getVersion());
 ```
 
 ## Logging

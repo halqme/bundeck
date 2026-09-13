@@ -8,5 +8,8 @@ Bundeck's documentation is organized by purpose.
 | [API reference](API.md)                      | Functions, types, and extensions available from Bun                  |
 | [Developer guide](development.md)            | Development environment, verification commands, and source structure |
 | [Sample presentation](../examples/sample.md) | A sample presentation using Bundeck syntax                           |
+| [Changelog](../CHANGELOG.md)                 | User-facing changes and release history                              |
+| [Contributing guide](../CONTRIBUTING.md)     | Development and pull request workflow                                |
+| [Security policy](../SECURITY.md)            | Vulnerability reporting                                              |
 
 If you are new to Bundeck, start with the [Quick Start](../README.md#quick-start) section in the README.

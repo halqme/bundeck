@@ -1,71 +1,72 @@
 # AGENTS.md
 
-Bundeck の開発エージェント向けガイド。Bun と TypeScript で Markdown から HTML スライドを生成するプロジェクトです。
+Development guide for Bundeck contributors and coding agents. Bundeck is a Bun and TypeScript project that generates HTML slides from Markdown.
 
-## 作業ルール
+## Working rules
 
-- プロジェクトに関する応答とドキュメントは日本語で書く。
-- 変更前に `bun run check` を実行する。
-- 変更後は `bun run check` と、変更箇所に関係するテストを実行する。
-- `dist/` は生成物なので、原則として直接編集しない。
-- 公開 API や Markdown 構文を変更するときは、実装・テスト・`docs/API.md` の内容をそろえる。
-- コミットする場合は、変更内容が分かる簡潔なコミットメッセージにする。
+- Write project responses and documentation in English.
+- Run `bun run check` before making changes.
+- Run `bun run check` and the tests related to the changed code after making changes.
+- `dist/` contains generated files and should not be edited directly.
+- When changing the public API or Markdown syntax, keep the implementation, tests, and `docs/API.md` in sync.
+- Use a concise commit message that clearly describes the change.
 
-## 開発コマンド
+## Development commands
 
 ```bash
-# 依存関係をインストール
+# Install dependencies
 bun install
 
-# CLI をビルド
+# Build the CLI and library bundles
 bun run build
 
-# フォーマット、Lint、型チェック
+# Format, lint, and type-check
 bun run check
 
-# 個別のチェック
+# Individual checks
 bun run format
 bun run format:check
 bun run lint
 bun run type-check
 
-# テスト
+# Tests
 bun test
 bun test tests/parser.test.ts
 ```
 
-## CLI の使い方
+## CLI usage
 
-ビルド済み CLI または npm パッケージの CLI を使う。
+Use the built CLI or the npm package CLI.
 
 ```bash
-# Markdown から静的 HTML を生成（既定では入力ファイルと同じ場所に .html を出力）
+# Generate static HTML from Markdown (writes .html next to the input by default)
 bundeck presentation.md
 
-# 出力先を指定
+# Specify an output path
 bundeck presentation.md --output slides.html
 
-# HTML/CSS を圧縮
+# Minify generated HTML/CSS
 bundeck presentation.md --minify
 
-# 生成後にブラウザで開く
+# Open the generated presentation in a browser
 bundeck presentation.md --auto-open
 
-# 開発サーバー（HMR 対応）
+# Start the development server with HMR
 bundeck serve presentation.md
 bundeck serve presentation.md --port 8080
 ```
 
-ローカルで実行する場合は、ビルド後に `bun run dist/cli.js` を使う。
+When running locally, use `bun run dist/cli.js` after building.
 
-## プレゼンテーションの Markdown
+## Presentation Markdown
 
-先頭に YAML frontmatter を置ける。主な項目は `title`、`theme`、`mode`、`aspectRatio`、`fontSize` で、その他の項目もメタデータとして保持される。
+YAML frontmatter may appear at the beginning of a presentation. Common fields include `title`, `theme`, `mode`, `lang`, `aspectRatio`, and `fontSize`. Other fields are retained as metadata.
 
 ```markdown
 ---
 title: My Presentation
 theme: default
+lang: en
 aspectRatio: 16:9
 fontSize: M
 ---
@@ -81,52 +82,52 @@ Content...
 More content...
 ```
 
-組み込みの拡張構文は次のとおり。
+Built-in extensions include:
 
-- `---`：スライドを分割する。
-- `::: speaker ... :::`：聴衆には表示しないスピーカーノートを付ける。
-- `::: columns ... :::`：カラムレイアウトを作る。
-- `{.class-name}`：見出し、インライン要素、画像などに CSS クラスを付ける。
+- `---`: Split the presentation into slides.
+- `::: speaker ... :::`: Add speaker notes that are hidden from the audience.
+- `::: columns ... :::`: Create a column layout.
+- `{.class-name}`: Add CSS classes to headings, inline elements, images, and other supported elements.
 
-API の詳細は [`docs/API.md`](docs/API.md) を参照する。
+See [`docs/API.md`](docs/API.md) for API details.
 
-## アーキテクチャ
+## Architecture
 
-- **`src/cli.ts`**：Bun から起動される CLI エントリーポイント。
-- **`src/cli/`**：引数処理、静的ビルド、CLI の表示・エラー処理。
-- **`src/core/parser.ts`**：frontmatter を取り出し、`marked` で Markdown をトークン化する。
-- **`src/core/splitter.ts`**：トークン列を `Presentation` と `Slide[]` に分割し、本文とノートを分離する。
-- **`src/core/extensions/`**：見出し、インライン要素、画像、コンテナの Markdown 拡張。
-- **`src/core/layout-design.ts`**：コンテンツ量に応じたスライドのレイアウト調整。
-- **`src/template/renderer.ts`**：スライド、CSS、ランタイムから HTML を組み立てる。
-- **`src/template/styles.ts`**：テーマと CSS アセットの対応を定義する。
-- **`src/styles/`**：共通 CSS、印刷用 CSS、view UI、`default` / `dark` テーマ。
-- **`src/client/runtime-view.ts`**：静的 HTML 用の view runtime エントリーポイント。
-- **`src/client/runtime-server.ts`**：開発サーバー用の view / presenter runtime。
-- **`src/client/core/`**：スライド移動、ハッシュルーティング、ビューポート調整、view UI、座標計算。
-- **`src/client/presenter/`**：プレゼンター画面、タイマー、ノート、レーザーポインター。
-- **`src/server/index.ts`**：Markdown の監視、HMR、HTML とアセットの配信。
-- **`src/server/generator.ts`**：サーバー用ランタイムをバンドルして HTML を生成する。
-- **`src/types/`**：`Presentation`、`Slide`、同期メッセージなどの共有型。
-- **`tests/`**：CLI、パーサー、拡張、ランタイム関連のテスト。
+- **`src/cli.ts`**: CLI entry point launched by Bun.
+- **`src/cli/`**: Argument parsing, static builds, and CLI output/error handling.
+- **`src/core/parser.ts`**: Extracts frontmatter and tokenizes Markdown with `marked`.
+- **`src/core/splitter.ts`**: Splits tokens into a `Presentation` and `Slide[]`, separating body content and notes.
+- **`src/core/extensions/`**: Markdown extensions for headings, inline elements, images, and containers.
+- **`src/core/layout-design.ts`**: Adjusts slide layout based on content density.
+- **`src/template/renderer.ts`**: Assembles slides, CSS, and runtime code into HTML.
+- **`src/template/styles.ts`**: Maps themes to CSS assets.
+- **`src/styles/`**: Shared CSS, print styles, view UI, and the `default` / `dark` themes.
+- **`src/client/runtime-view.ts`**: View-mode runtime entry point for static HTML.
+- **`src/client/runtime-server.ts`**: View and presenter runtime for the development server.
+- **`src/client/core/`**: Slide navigation, hash routing, viewport scaling, view UI, and coordinate calculations.
+- **`src/client/presenter/`**: Presenter UI, timer, notes, and laser pointer.
+- **`src/server/index.ts`**: Markdown watching, HMR, and HTML/asset serving.
+- **`src/server/generator.ts`**: Bundles the server runtime and generates HTML.
+- **`src/types/`**: Shared `Presentation`, `Slide`, and synchronization message types.
+- **`tests/`**: CLI, parser, extension, and runtime tests.
 
-### 生成フロー
+### Generation flow
 
 ```text
 Markdown
-  → MarkdownParser（frontmatter + marked）
+  → MarkdownParser (frontmatter + marked)
   → splitTokensToSlides
   → Presentation
-  → HTMLRenderer + クライアント runtime
+  → HTMLRenderer + client runtime
   → HTML
 ```
 
-view mode は `runtime-view.ts` と `src/client/core/` を使う。serve mode は `/` を view mode、`/presenter` を presenter mode として配信し、`BroadcastChannel` でスライド位置とレーザーポインターを同期する。
+View mode uses `runtime-view.ts` and `src/client/core/`. Serve mode exposes view mode at `/` and presenter mode at `/presenter`, synchronizing slide position and laser-pointer state through `BroadcastChannel`.
 
-## 変更時の指針
+## Change guidelines
 
-- 新しい Markdown 構文は `src/core/extensions/` に実装し、`src/core/extensions/index.ts` と parser / renderer の登録を確認する。
-- frontmatter の項目を増やすときは `src/core/parser.ts` と共有型、HTML 生成側の扱いを確認する。
-- view と presenter の両方に関係するランタイム変更は、まず `src/client/core/` に共通化できるか検討する。
-- スライド表示領域や presenter からの座標変換は `src/client/core/geometry.ts` に集約する。
-- UI やランタイムを変更したら、該当テストに加えて必要なら `bun run build` で実際のバンドルも確認する。
+- Implement new Markdown syntax in `src/core/extensions/`, then check registration in `src/core/extensions/index.ts` and the parser/renderer.
+- When adding frontmatter fields, update `src/core/parser.ts`, the shared types, and HTML generation.
+- For runtime changes affecting both view and presenter modes, first consider whether the logic belongs in `src/client/core/`.
+- Keep slide display sizing and presenter coordinate conversion in `src/client/core/geometry.ts`.
+- When changing UI or runtime code, run the relevant tests and, when appropriate, `bun run build` to verify the actual bundles.
