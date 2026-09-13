@@ -16,6 +16,17 @@ import { fileURLToPath } from "node:url";
 
 import { themes, styles } from "./styles.js";
 
+const FONT_SIZE_PRESETS = new Set(["xs", "s", "m", "l", "xl"]);
+
+function getFontSizeClass(fontSize: PresentationMeta["fontSize"]): string {
+  if (typeof fontSize !== "string") {
+    return "";
+  }
+
+  const normalized = fontSize.toLowerCase();
+  return FONT_SIZE_PRESETS.has(normalized) ? "font-size-" + normalized : "";
+}
+
 export class HTMLRenderer {
   private markedInstance: Marked;
   private minifier: HTMLMinifier;
@@ -107,10 +118,10 @@ export class HTMLRenderer {
     aspectRatioCSS: Record<string, string>;
   } {
     return {
-      title: String(meta.title ?? DEFAULT_PRESENTATION_CONFIG.title),
-      lang: String(meta.lang ?? DEFAULT_PRESENTATION_CONFIG.lang),
-      theme: String(meta.theme ?? DEFAULT_PRESENTATION_CONFIG.theme),
-      fontSize: meta.fontSize ? "font-size-" + meta.fontSize.toLowerCase() : "",
+      title: typeof meta.title === "string" ? meta.title : DEFAULT_PRESENTATION_CONFIG.title,
+      lang: typeof meta.lang === "string" ? meta.lang : DEFAULT_PRESENTATION_CONFIG.lang,
+      theme: typeof meta.theme === "string" ? meta.theme : DEFAULT_PRESENTATION_CONFIG.theme,
+      fontSize: getFontSizeClass(meta.fontSize),
       aspectRatioCSS: generateAspectRatioCSSVariables(meta.aspectRatio),
     };
   }

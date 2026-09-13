@@ -81,6 +81,40 @@ describe("HTMLRenderer", () => {
       const result = await renderer.generate(p, mockRuntime);
       expect(result).toContain('class="font-size-l"');
     });
+
+    it("should escape frontmatter title in the document head", async () => {
+      const p: Presentation = {
+        ...mockPresentation,
+        meta: {
+          ...mockPresentation.meta,
+          title: "</title><script>alert(1)</script>&",
+        },
+      };
+
+      const result = (await renderer.generate(p, mockRuntime)) as string;
+
+      expect(result).toContain(
+        "<title>&lt;/title&gt;&lt;script&gt;alert(1)&lt;/script&gt;&amp;</title>",
+      );
+      expect(result).not.toContain("<title></title><script>alert(1)</script>&</title>");
+    });
+
+    it("should ignore invalid font size values instead of emitting unsafe body attributes", async () => {
+      const p: Presentation = {
+        ...mockPresentation,
+        meta: {
+          ...mockPresentation.meta,
+          fontSize: 'M" onmouseover="alert(1)' as Presentation["meta"]["fontSize"],
+        },
+      };
+
+      const result = (await renderer.generate(p, mockRuntime)) as string;
+
+      expect(result).not.toContain('onmouseover="alert(1)');
+      expect(result).not.toContain('font-size-m"');
+      expect(result).toContain("</head><body>");
+    });
+
     it("should minify HTML if enableMinify is true", async () => {
       const r = new HTMLRenderer({ enableMinify: true });
       const result = await r.generate(mockPresentation, mockRuntime);
