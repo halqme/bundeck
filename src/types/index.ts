@@ -9,6 +9,7 @@ export interface Presentation {
 /** プレゼンテーションのメタデータ */
 export interface PresentationMeta {
   title?: string;
+  lang?: string;
   theme?: string;
   mode?: "light" | "dark" | "auto"; // ダークモード対応
   aspectRatio?: string;
@@ -25,4 +26,4 @@ export interface Slide {
 }
 
 // Sync message types
-export type { SyncMessage } from "./sync";
+export type { SyncMessage } from "./sync.js";

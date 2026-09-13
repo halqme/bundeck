@@ -1,6 +1,6 @@
-import { HTMLRenderer } from "../template/renderer";
-import type { Presentation } from "../types";
-import { consoleError } from "../cli/utils";
+import { HTMLRenderer } from "../template/renderer.js";
+import { loadRuntimeScript } from "../utils/runtime.js";
+import type { Presentation } from "../types/index.js";
 
 export class ServerHTMLGenerator {
   private renderer: HTMLRenderer;
@@ -28,21 +28,7 @@ export class ServerHTMLGenerator {
         };
       }
   > {
-    const buildResult = await Bun.build({
-      entrypoints: ["src/client/runtime-server.ts"],
-      target: "browser",
-      minify: this.enableMinify,
-    });
-
-    if (!buildResult.success || buildResult.outputs.length === 0) {
-      const logDetail = buildResult.logs
-        .map((log) => (typeof log === "string" ? log : (log.message ?? JSON.stringify(log))))
-        .join("; ");
-      consoleError("Client runtime build failed", logDetail);
-      throw new Error("Client runtime build failed: " + logDetail);
-    }
-
-    const runtimeJs = await buildResult.outputs[0]!.text();
+    const runtimeJs = await loadRuntimeScript("server", { minify: this.enableMinify });
     return this.renderer.generate(presentation, runtimeJs);
   }
 }

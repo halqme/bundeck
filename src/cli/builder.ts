@@ -1,6 +1,7 @@
-import { parseMarkdown } from "../core/parser";
-import { HTMLRenderer } from "../template/renderer";
-import type { CLIOptions } from "./utils";
+import { parseMarkdown } from "../core/parser.js";
+import { HTMLRenderer } from "../template/renderer.js";
+import { loadRuntimeScript } from "../utils/runtime.js";
+import type { CLIOptions } from "./utils.js";
 import {
   getOutputPath,
   ensureOutputDirectory,
@@ -9,7 +10,7 @@ import {
   consoleError,
   consoleSuccess,
   showFixSuggestion,
-} from "./utils";
+} from "./utils.js";
 
 export async function build(inputPath: string, options: CLIOptions): Promise<string> {
   let absInputPath: string;
@@ -36,21 +37,7 @@ export async function build(inputPath: string, options: CLIOptions): Promise<str
     const presentation = parseMarkdown(markdown);
 
     // 2. Prepare Runtime (Static)
-    const buildResult = await Bun.build({
-      entrypoints: ["src/client/runtime-view.ts"],
-      target: "browser",
-      minify: options.minify,
-    });
-
-    if (!buildResult.success || buildResult.outputs.length === 0) {
-      const logDetail = buildResult.logs
-        .map((log) => (typeof log === "string" ? log : (log.message ?? JSON.stringify(log))))
-        .join("; ");
-      consoleError("Client runtime build failed", logDetail);
-      throw new Error(`Client runtime build failed: ${logDetail}`);
-    }
-
-    const runtimeJs = await buildResult.outputs[0]!.text();
+    const runtimeJs = await loadRuntimeScript("view", { minify: options.minify });
 
     // 3. Generate HTML
     const renderer = new HTMLRenderer({ enableMinify: options.minify, inlineAssets: true });

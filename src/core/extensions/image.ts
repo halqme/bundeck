@@ -1,5 +1,6 @@
 import type { TokenizerAndRendererExtension, Tokens } from "marked";
-import { attrsToClass } from "./classUtils";
+import { attrsToClass } from "./classUtils.js";
+import { escapeHtmlAttribute, sanitizeImageUrl } from "../../utils/html.js";
 
 export interface StyledImageToken extends Tokens.Generic {
   type: "styledImage";
@@ -34,6 +35,7 @@ export const styledImageExtension: TokenizerAndRendererExtension = {
     const className = attrsToClass(styledToken.attrs);
 
     // Place class attribute first to make tests that search for `<img class="...">` deterministic
-    return `<img class="${className}" src="${styledToken.href}" alt="${styledToken.text}">`;
+    const href = sanitizeImageUrl(styledToken.href);
+    return `<img class="${className}" src="${escapeHtmlAttribute(href)}" alt="${escapeHtmlAttribute(styledToken.text)}">`;
   },
 };

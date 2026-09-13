@@ -4,10 +4,11 @@ import {
   styledSpanExtension,
   containerExtension,
   styledImageExtension,
-} from "./extensions";
-import { splitTokensToSlides } from "./splitter";
-import type { Presentation, PresentationMeta } from "../types";
-import { consoleWarn } from "../cli/utils";
+} from "./extensions/index.js";
+import { splitTokensToSlides } from "./splitter.js";
+import type { Presentation, PresentationMeta } from "../types/index.js";
+import { consoleWarn } from "../cli/utils.js";
+import { DEFAULT_PRESENTATION_CONFIG } from "../config.js";
 
 export class MarkdownParser {
   private markedInstance: Marked;
@@ -73,7 +74,7 @@ export class MarkdownParser {
     // 5. Construct Presentation object
     const meta: PresentationMeta = {
       title: data.title,
-      theme: data.theme || "default",
+      theme: data.theme || DEFAULT_PRESENTATION_CONFIG.theme,
       mode: data.mode, // 'light' | 'dark' | 'auto'
       aspectRatio: data.aspectRatio,
       fontSize: data.fontSize, // 'XS' | 'S' | 'M' | 'L' | 'XL'

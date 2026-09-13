@@ -2,25 +2,25 @@ name: Release
 
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - release
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write # OIDCによる認証に必須
+      id-token: write # Required for OIDC authentication
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
 
-      # ビルド用にBunをセットアップ
+      # Set up Bun for the build
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      # npmコマンド用にNode.jsをセットアップ
+      # Set up Node.js for npm commands
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
@@ -38,6 +38,9 @@ jobs:
       - name: Build
         run: bun run build
 
-      # Secret不要。OIDCで認証し、Provenance付きで公開
+      - name: Verify npm package
+        run: bun run verify:package
+
+      # Publish with provenance using OIDC; no npm secret is required
       - name: Publish to NPM
         run: npm publish

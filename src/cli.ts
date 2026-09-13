@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
-import { runCLI } from "./cli/index";
-import { consoleError } from "./cli/utils";
+import { runCLI } from "./cli/index.js";
+import { consoleError } from "./cli/utils.js";
 
 // Main execution
 const args = Bun.argv.slice(2);

@@ -1,6 +1,7 @@
-import { parseArguments, showHelp, consoleError, consoleSuccess, consoleInfo } from "./utils";
-import { build } from "./builder";
-import { startServer } from "../server/index";
+import { parseArguments, showHelp, consoleError, consoleSuccess, consoleInfo } from "./utils.js";
+import { build } from "./builder.js";
+import { startServer } from "../server/index.js";
+import { getVersion } from "../version.js";
 
 export async function runCLI(args: string[]): Promise<string> {
   try {
@@ -57,7 +58,7 @@ Options:
 
     // Check for version flag
     if (args.includes("--version") || args.includes("-v")) {
-      consoleInfo("Bundeck v0.0.1");
+      consoleInfo(`Bundeck v${getVersion()}`);
       process.exit(0);
     }
 
@@ -83,5 +84,5 @@ Options:
 }
 
 // Re-export utilities for external use
-export { parseArguments, showHelp, type CLIOptions } from "./utils";
-export { build } from "./builder";
+export { parseArguments, showHelp, type CLIOptions } from "./utils.js";
+export { build } from "./builder.js";

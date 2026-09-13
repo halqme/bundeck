@@ -4,18 +4,17 @@ import {
   styledSpanExtension,
   containerExtension,
   styledImageExtension,
-} from "../core/extensions";
-import { getSlideFontSizeAttribute } from "../core/layout-design";
-import { HTMLMinifier } from "../utils/minifier";
-import { generateAspectRatioCSSVariables } from "../utils/aspect-ratio";
-import type { Presentation, PresentationMeta } from "../types";
+} from "../core/extensions/index.js";
+import { getSlideFontSizeAttribute } from "../core/layout-design.js";
+import { DEFAULT_PRESENTATION_CONFIG } from "../config.js";
+import { HTMLMinifier } from "../utils/minifier.js";
+import { generateAspectRatioCSSVariables } from "../utils/aspect-ratio.js";
+import { escapeHtml, escapeHtmlAttribute, sanitizeImageUrl } from "../utils/html.js";
+import type { Presentation, PresentationMeta } from "../types/index.js";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-import { themes, styles } from "./styles";
-
-// Constants
-const DEFAULT_TITLE = "Untitled Presentation";
-const DEFAULT_THEME = "default";
+import { themes, styles } from "./styles.js";
 
 export class HTMLRenderer {
   private markedInstance: Marked;
@@ -73,6 +72,11 @@ export class HTMLRenderer {
         styledImageExtension,
       ],
       renderer: {
+        image(token) {
+          const href = sanitizeImageUrl(token.href);
+          const title = token.title ? ` title="${escapeHtmlAttribute(token.title)}"` : "";
+          return `<img src="${escapeHtmlAttribute(href)}" alt="${escapeHtmlAttribute(token.text)}"${title}>`;
+        },
         paragraph(token) {
           const tokens = token.tokens || [];
           const isOnlyImages = tokens.every(
@@ -97,19 +101,24 @@ export class HTMLRenderer {
 
   private extractConfig(meta: PresentationMeta): {
     title: string;
+    lang: string;
     theme: string;
     fontSize: string;
     aspectRatioCSS: Record<string, string>;
   } {
     return {
-      title: meta.title ?? DEFAULT_TITLE,
-      theme: meta.theme ?? DEFAULT_THEME,
+      title: String(meta.title ?? DEFAULT_PRESENTATION_CONFIG.title),
+      lang: String(meta.lang ?? DEFAULT_PRESENTATION_CONFIG.lang),
+      theme: String(meta.theme ?? DEFAULT_PRESENTATION_CONFIG.theme),
       fontSize: meta.fontSize ? "font-size-" + meta.fontSize.toLowerCase() : "",
       aspectRatioCSS: generateAspectRatioCSSVariables(meta.aspectRatio),
     };
   }
 
-  private resolve = (filepath: string) => path.resolve(path.dirname(Bun.main), filepath);
+  private resolve = (filepath: string) => {
+    if (path.isAbsolute(filepath)) return filepath;
+    return path.resolve(path.dirname(fileURLToPath(import.meta.url)), filepath);
+  };
 
   private async loadAssets(theme: string) {
     const readFileSafe = async (filepath: string, label: string): Promise<string> => {
@@ -186,6 +195,7 @@ export class HTMLRenderer {
   private buildHTML(
     config: {
       title: string;
+      lang: string;
       theme: string;
       fontSize: string;
       aspectRatioCSS: Record<string, string>;
@@ -228,6 +238,7 @@ export class HTMLRenderer {
   private buildInlineHTML(
     config: {
       title: string;
+      lang: string;
       theme: string;
       fontSize: string;
       aspectRatioCSS: Record<string, string>;
@@ -240,15 +251,17 @@ export class HTMLRenderer {
       .map(([property, value]) => property + ": " + value + ";")
       .join(" ");
 
+    // Apply the requested dimensions after theme/base styles so their
+    // `--slide-width` and `--slide-height` values take precedence.
     const inlineStyles =
-      ":root { " +
-      aspectRatioStyles +
-      " }" +
       assets.themeUsed +
       assets.mainCss +
       assets.viewUiCss +
       assets.presenterCss +
-      assets.printCss;
+      assets.printCss +
+      ":root { " +
+      aspectRatioStyles +
+      " }";
 
     return this.createHTMLTemplate({
       config,
@@ -260,6 +273,7 @@ export class HTMLRenderer {
   private buildExternalHTML(
     config: {
       title: string;
+      lang: string;
       theme: string;
       fontSize: string;
       aspectRatioCSS: Record<string, string>;
@@ -277,11 +291,11 @@ export class HTMLRenderer {
       : "";
 
     const headContent =
-      "<style>:root { " +
-      aspectRatioStyles +
-      ' }</style><link rel="stylesheet" href="/assets/theme.css"><link rel="stylesheet" href="/assets/styles.css"><link rel="stylesheet" href="/assets/view-ui.css">' +
+      '<link rel="stylesheet" href="/assets/theme.css"><link rel="stylesheet" href="/assets/styles.css"><link rel="stylesheet" href="/assets/view-ui.css">' +
       presenterLink +
-      '<link rel="stylesheet" href="/assets/print.css" media="print">';
+      '<link rel="stylesheet" href="/assets/print.css" media="print"><style>:root { ' +
+      aspectRatioStyles +
+      " }</style>";
 
     const html = this.createHTMLTemplate({
       config,
@@ -310,6 +324,7 @@ export class HTMLRenderer {
   }: {
     config: {
       title: string;
+      lang: string;
       theme: string;
       fontSize: string;
       aspectRatioCSS: Record<string, string>;
@@ -320,8 +335,10 @@ export class HTMLRenderer {
     const bodyClass = config.fontSize ? ' class="' + config.fontSize + '"' : "";
 
     return (
-      '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' +
-      config.title +
+      '<!DOCTYPE html><html lang="' +
+      escapeHtmlAttribute(config.lang) +
+      '"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' +
+      escapeHtml(config.title) +
       "</title>" +
       headContent +
       "</head><body" +
