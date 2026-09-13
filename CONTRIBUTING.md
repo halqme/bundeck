@@ -33,4 +33,13 @@ Use a concise message that explains the change. Do not include unrelated formatt
 
 ## Releases
 
-The release workflow publishes the package when a commit is pushed to the `release` branch. To release changes from `main`, merge or push the intended `main` commit to `release` after updating the version and changelog.
+Releases are created from `main`; there is no release branch.
+
+1. Update `package.json` and `CHANGELOG.md` in a pull request.
+2. Merge the release preparation into `main` and wait for CI to pass.
+3. Create an annotated `vX.Y.Z` tag on the intended `main` commit and push the tag.
+4. The release workflow verifies that the tag matches `package.json`, verifies that the tagged commit is contained in `main`, reruns checks and tests, builds the package, verifies the npm contents, and publishes it.
+
+Create the tag only after the pull request has been merged. A tag on a topic branch does not identify the released commit when the pull request is squash-merged or otherwise rewritten during merge.
+
+See `docs/development.md` for the maintainer release procedure.

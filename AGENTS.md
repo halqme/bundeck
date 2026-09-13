@@ -9,6 +9,7 @@ Development guide for Bundeck contributors and coding agents. Bundeck is a Bun a
 - Run `bun run check` and the tests related to the changed code after making changes.
 - `dist/` contains generated files and should not be edited directly.
 - When changing the public API or Markdown syntax, keep the implementation, tests, and `docs/API.md` in sync.
+- Releases are tagged only after the intended commit has been merged into `main`; never tag a topic branch before merge.
 - Use a concise commit message that clearly describes the change.
 
 ## Development commands
@@ -20,10 +21,10 @@ bun install
 # Build the CLI and library bundles
 bun run build
 
-# Format, lint, and type-check
+# Check formatting, linting, and types without modifying files
 bun run check
 
-# Individual checks
+# Individual checks and fixes
 bun run format
 bun run format:check
 bun run lint
