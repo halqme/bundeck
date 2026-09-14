@@ -18,7 +18,7 @@ export async function build(inputPath: string, options: CLIOptions): Promise<str
   try {
     absInputPath = validateInputFile(inputPath);
   } catch (e) {
-    consoleError("入力ファイルが見つかりません", (e as Error).message);
+    consoleError("Input file not found", (e as Error).message);
     showFixSuggestion("FILE_NOT_FOUND");
     throw e;
   }
@@ -50,8 +50,8 @@ export async function build(inputPath: string, options: CLIOptions): Promise<str
 
     return outputPath;
   } catch (error) {
-    const errorMessage = (error as Error).message || "不明なエラー";
-    consoleError("ビルドに失敗しました", errorMessage);
+    const errorMessage = (error as Error).message || "Unknown error";
+    consoleError("Build failed", errorMessage);
     showFixSuggestion("BUILD_ERROR");
     throw error;
   }

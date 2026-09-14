@@ -1,7 +1,7 @@
 import { resolve, basename, extname, dirname } from "path";
 import { existsSync, mkdirSync, appendFileSync } from "fs";
 
-// ANSIカラーコード
+// ANSI color codes
 const colors = {
   reset: "\x1b[0m",
   red: "\x1b[31m",
@@ -16,14 +16,14 @@ const colors = {
 let logFilePath: string | null = null;
 
 /**
- * ログファイルのパスを設定
+ * Set the log file path
  */
 export function setLogFilePath(path: string): void {
   logFilePath = path;
 }
 
 /**
- * ファイルにログを書き込む
+ * Write a log entry to the file
  */
 function writeToLogFile(message: string, level: "error" | "warn" | "info"): void {
   if (!logFilePath) return;
@@ -32,12 +32,12 @@ function writeToLogFile(message: string, level: "error" | "warn" | "info"): void
   try {
     appendFileSync(logFilePath, logEntry, { encoding: "utf-8" });
   } catch {
-    // ログファイルへの書き込みに失敗した場合は無視
+    // Ignore failures when writing to the log file
   }
 }
 
 /**
- * カラー付きコンソール出力 - エラー
+ * Colored console output - error
  */
 export function consoleError(message: string, details?: string): void {
   const fullMessage = details
@@ -48,7 +48,7 @@ export function consoleError(message: string, details?: string): void {
 }
 
 /**
- * カラー付きコンソール出力 - 警告
+ * Colored console output - warning
  */
 export function consoleWarn(message: string): void {
   const fullMessage = `${colors.yellow}${colors.bold}Warning:${colors.reset} ${message}`;
@@ -57,7 +57,7 @@ export function consoleWarn(message: string): void {
 }
 
 /**
- * カラー付きコンソール出力 - 情報
+ * Colored console output - info
  */
 export function consoleInfo(message: string): void {
   const fullMessage = `${colors.cyan}ℹ${colors.reset} ${message}`;
@@ -66,7 +66,7 @@ export function consoleInfo(message: string): void {
 }
 
 /**
- * カラー付きコンソール出力 - 成功
+ * Colored console output - success
  */
 export function consoleSuccess(message: string): void {
   const fullMessage = `${colors.green}✓${colors.reset} ${message}`;
@@ -75,14 +75,14 @@ export function consoleSuccess(message: string): void {
 }
 
 /**
- * エラー発生時のヘルプリンクを表示
+ * Show a help link when an error occurs
  */
 export function showFixSuggestion(errorCode: string): void {
   const suggestions: Record<string, string> = {
-    FILE_NOT_FOUND: "ファイルが存在するか確認してください",
-    INVALID_OPTION: "正しいオプションか -h ヘルプを確認してください",
-    PARSE_ERROR: "Markdownの構文を確認してください",
-    BUILD_ERROR: "依存関係が正しいか確認してください",
+    FILE_NOT_FOUND: "Check that the file exists",
+    INVALID_OPTION: "Check the option or use -h for help",
+    PARSE_ERROR: "Check the Markdown syntax",
+    BUILD_ERROR: "Check that the dependencies are correct",
   };
 
   const suggestion = suggestions[errorCode];

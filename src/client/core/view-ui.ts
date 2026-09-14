@@ -57,20 +57,20 @@ export function addContextMenuItem(
 function createNavigationButtons(navigator: SlideNavigator, onNavigate?: () => void) {
   const container = document.createElement("nav");
   container.id = "vnav-buttons";
-  container.setAttribute("aria-label", "スライドナビゲーション");
+  container.setAttribute("aria-label", "Slide navigation");
 
   const prevBtn = document.createElement("button");
   prevBtn.type = "button";
   prevBtn.id = "vnav-prev";
-  prevBtn.title = "前のスライド (←)";
-  prevBtn.setAttribute("aria-label", "前のスライド");
+  prevBtn.title = "Previous slide (←)";
+  prevBtn.setAttribute("aria-label", "Previous slide");
   prevBtn.textContent = "‹";
 
   const nextBtn = document.createElement("button");
   nextBtn.type = "button";
   nextBtn.id = "vnav-next";
-  nextBtn.title = "次のスライド (→)";
-  nextBtn.setAttribute("aria-label", "次のスライド");
+  nextBtn.title = "Next slide (→)";
+  nextBtn.setAttribute("aria-label", "Next slide");
   nextBtn.textContent = "›";
 
   container.appendChild(prevBtn);
@@ -112,13 +112,13 @@ function createContextMenu(navigator: SlideNavigator, onNavigate?: () => void) {
   menu.id = "vnav-context-menu";
   menu.style.display = "none";
   menu.setAttribute("role", "menu");
-  menu.setAttribute("aria-label", "スライド操作");
+  menu.setAttribute("aria-label", "Slide controls");
   menu.setAttribute("aria-hidden", "true");
   document.body.appendChild(menu);
 
   const menuItems: ContextMenuItem[] = [
     {
-      label: "最初のスライド",
+      label: "First slide",
       shortcut: "Home",
       action: () => {
         navigator.goTo(0);
@@ -126,7 +126,7 @@ function createContextMenu(navigator: SlideNavigator, onNavigate?: () => void) {
       },
     },
     {
-      label: "前のスライド",
+      label: "Previous slide",
       shortcut: "←",
       action: () => {
         navigator.prev();
@@ -134,7 +134,7 @@ function createContextMenu(navigator: SlideNavigator, onNavigate?: () => void) {
       },
     },
     {
-      label: "次のスライド",
+      label: "Next slide",
       shortcut: "→",
       action: () => {
         navigator.next();
@@ -142,7 +142,7 @@ function createContextMenu(navigator: SlideNavigator, onNavigate?: () => void) {
       },
     },
     {
-      label: "最後のスライド",
+      label: "Last slide",
       shortcut: "End",
       action: () => {
         navigator.goTo(navigator.totalSlides - 1);
@@ -151,7 +151,7 @@ function createContextMenu(navigator: SlideNavigator, onNavigate?: () => void) {
     },
     { label: null, shortcut: undefined, action: null }, // separator
     {
-      label: "スライド番号を指定...",
+      label: "Go to slide...",
       shortcut: undefined,
       action: () => promptGoToSlide(navigator, onNavigate),
     },
@@ -283,14 +283,14 @@ function showContextMenu(menu: HTMLElement, x: number, y: number) {
 
 function promptGoToSlide(navigator: SlideNavigator, onNavigate?: () => void) {
   const input = prompt(
-    `スライド番号を入力 (1 〜 ${navigator.totalSlides})`,
+    `Enter a slide number (1–${navigator.totalSlides})`,
     String(navigator.currentIndex + 1),
   );
   if (input === null) return; // cancelled
 
   const num = parseInt(input, 10);
   if (isNaN(num) || num < 1 || num > navigator.totalSlides) {
-    alert(`1 〜 ${navigator.totalSlides} の範囲で入力してください`);
+    alert(`Enter a number between 1 and ${navigator.totalSlides}`);
     return;
   }
 
