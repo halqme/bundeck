@@ -1,6 +1,6 @@
 ---
-title: Bundeck 機能紹介
-author: Bundeck 開発チーム
+title: Bundeck Feature Overview
+author: Bundeck Development Team
 theme: default
 aspectRatio: 16:9
 fontSize: M
@@ -9,66 +9,66 @@ fontSize: M
 # Bundeck {.center}
 
 **Zero-Config Slide Generator**
-Markdownを書くだけで、美しいスライドを自動生成します。
+Create beautiful slides automatically with just Markdown.
 
-::: .center 
-[今すぐ始める]{.mark}
+::: .center
+[Get Started Now]{.mark}
 :::
 
 ::: speaker
-スライドの冒頭です。
-Bundeckは設定不要で使い始められるスライド作成ツールです。
+This is the opening slide.
+Bundeck is a slide creation tool that requires no configuration to get started.
 :::
 
 ---
 
-## 🚀 主な特徴
+## 🚀 Key Features
 
-- **Markdownベース**: 慣れ親しんだ記法でコンテンツを作成
-- **自動レイアウト**: コンテンツ量に合わせてフォントサイズを自動調整
-- **柔軟な拡張**: クラス指定やカラムレイアウトをサポート
-- **高速ビルド**: Bunパワーによる高速なHTML生成
+- **Markdown-based**: Create content with familiar syntax
+- **Automatic layout**: Automatically adjust font sizes to fit the amount of content
+- **Flexible extensions**: Supports custom classes and column layouts
+- **Fast builds**: Generate HTML quickly with the power of Bun
 
 ---
 
-## 🎨 タイポグラフィとスタイル
+## 🎨 Typography and Styling
 
-標準的なMarkdownに加え、属性指定が可能です。
+In addition to standard Markdown, you can specify attributes.
 
-### インラインスタイル
-特定の単語を [ハイライト]{.mark} したり、[アクセント]{.accent} をつけたりできます。
+### Inline Styles
+You can [highlight]{.mark} specific words or add an [accent]{.accent}.
 
-### 段落スタイル
+### Paragraph Styles
 ::: .center
-この段落は中央寄せです。
+This paragraph is centered.
 :::
 
 ::: .caption .right
-この段落は右寄せのキャプションです。
+This paragraph is a right-aligned caption.
 :::
 
 ::: speaker
-属性指定は `{.class}` の形式で行います。
+Use the `{.class}` format to specify attributes.
 :::
 
 ---
 
-## 📊 2カラムレイアウト {.center}
+## 📊 Two-Column Layout {.center}
 
-`::: columns` コンテナを使用して、画面を分割できます。
+Use the `::: columns` container to divide the screen.
 
 ::: columns
 :::: col
-### 左カラム
-- 箇条書き
-- コンテンツの整理
-- 視覚的な分離
+### Left Column
+- Bullet points
+- Content organization
+- Visual separation
 ::::
 
 :::: col
-### 右カラム
+### Right Column
 ```typescript
-// コードもきれいに表示
+// Code is displayed cleanly
 const slide = new SlideBun();
 slide.build("presentation.md");
 ```
@@ -77,68 +77,68 @@ slide.build("presentation.md");
 
 ---
 
-## 🖼️ 画像の取り扱い {.center}
+## 🖼️ Image Handling {.center}
 
-画像をスライドにフィットさせたり、フィルターを適用したりできます。
+You can fit images to the slide or apply filters.
 
 ![Demo Image](https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&q=80){.fit .opacity 80}
 
 ::: .caption
-`{.fit}` で枠内に収め、`{.opacity 80}` で透明度を調整しています。
+The `{.fit}` class keeps an image within the frame, while `{.opacity 80}` adjusts its opacity.
 :::
 
 ---
 
-## 🎭 背景画像 (Cover) {.overlay-dim}
+## 🎭 Background Image (Cover) {.overlay-dim}
 
 ![Cover Background](https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=80){.cover}
 
 ::: .overlay-dim
-`{.cover}` クラスを使用すると、画像を背景として全画面表示します。
+Using the `{.cover}` class displays an image full-screen as a background.
 :::
 
-# 背景付きスライド {.center .overlay-dim}
+# Slide with a Background {.center .overlay-dim}
 
 ::: .center .overlay-dim
-視覚的にインパクトのあるスライドも簡単に作成可能です。
+Visually striking slides are easy to create.
 :::
 
 ---
 
-## 📝 スピーカーノート
+## 📝 Speaker Notes
 
-`::: speaker` ブロックを使用すると、プレゼンターのみが見えるノートを作成できます。
+The `::: speaker` block lets you create notes visible only to the presenter.
 
-- 発表時のカンペ
-- 詳細な補足情報
-- 非表示の指示事項
+- Presenter cues
+- Detailed supplementary information
+- Hidden instructions
 
 ::: speaker
-この内容はスライド本体には表示されません。
-プレゼンターモードで確認できます。
+This content is not displayed on the slide itself.
+You can view it in presenter mode.
 :::
 
 ---
 
-## 📅 テーブル表示
+## 📅 Tables
 
-データの比較やリストも標準のMarkdownテーブルで記述できます。
+Standard Markdown tables can be used for data comparisons and lists.
 
-| 機能 | Bundeck | 他のツール |
+| Feature | Bundeck | Other Tools |
 | :--- | :---: | :---: |
-| 設定の手間 | ゼロ | 必要 |
-| ビルド速度 | 爆速 | 普通 |
-| 自由度 | 高い | 制限あり |
+| Setup effort | Zero | Required |
+| Build speed | Lightning fast | Average |
+| Flexibility | High | Limited |
 
 ---
 
-## 🏁 まとめ
+## 🏁 Summary
 
-Bundeckを使えば、デザインに悩む時間を減らし、 **「内容を伝えること」** に集中できます。
+With Bundeck, you can spend less time worrying about design and focus on **“getting your message across.”**
 
-### 次のステップ
-1. `bundeck my-slides.md` でビルド
-2. `bundeck serve my-slides.md` でプレビュー
+### Next Steps
+1. Build with `bundeck my-slides.md`
+2. Preview with `bundeck serve my-slides.md`
 
 ::: .center
 [Happy Presenting!]{.mark}
