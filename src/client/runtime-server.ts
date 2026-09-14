@@ -69,7 +69,7 @@ function setupViewMode(channel: BroadcastChannel | null) {
   // View-mode UI extras: hover nav buttons, context menu
   setupViewUI(navigator);
   // Add presenter mode option to context menu (only available in server mode)
-  addContextMenuItem("プレゼンターモードを開く", () => openPresenterMode());
+  addContextMenuItem("Open presenter mode", () => openPresenterMode());
 
   // ── Laser pointer ────────────────────────────────────────────
 
