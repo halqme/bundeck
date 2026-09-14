@@ -76,7 +76,7 @@ Write slides in Markdown.
 - Speaker notes
 ```
 
-See the [user guide](docs/guide.md) for the complete syntax reference.
+See the [User Guide](docs/guide.md) for the normal workflow and the [Authoring Reference](docs/authoring.md) for the complete Markdown syntax.
 
 ## Programmatic API
 
@@ -99,7 +99,9 @@ See the [API reference](docs/API.md) for all available options.
 ## Documentation
 
 - [Documentation index](docs/README.md)
-- [User guide](docs/guide.md) — CLI, Markdown syntax, view mode, and presenter mode
+- [User guide](docs/guide.md) — Installation, CLI usage, display modes, and introductory syntax
+- [Authoring reference](docs/authoring.md) — Complete Markdown syntax, classes, containers, and assets
+- [Layout behavior](docs/layout.md) — Automatic sizing, overflow scaling, aspect ratios, and columns
 - [API reference](docs/API.md) — Functions, types, and extensions for Bun
 - [Developer guide](docs/development.md) — Setup, checks, and project structure
 - [Sample presentation](examples/sample.md) — A presentation demonstrating Bundeck features
