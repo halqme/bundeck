@@ -1,3 +1,5 @@
+import { formatElapsedTime } from "./timer.js";
+
 export class PresenterUI {
   private container: HTMLElement;
   private slideFrameContainer: HTMLElement;
@@ -15,30 +17,31 @@ export class PresenterUI {
   private slideW: number = 1280;
   private slideH: number = 720;
   private resizeObserver: ResizeObserver | null = null;
+  private clockTimer: number | null = null;
 
   constructor() {
-    this.container = document.createElement("div");
+    this.container = document.createElement("main");
     this.container.id = "presenter-dashboard";
-    this.container.tabIndex = -1; // Allow focus programmatically
-
-    // Ensure clicking anywhere keeps focus on the dashboard for shortcuts
-    this.container.onclick = () => {
-      this.container.focus();
-    };
+    this.container.tabIndex = -1;
+    this.container.setAttribute("aria-label", "プレゼンターモード");
 
     // Header
-    const header = document.createElement("div");
+    const header = document.createElement("header");
     header.id = "presenter-header";
 
     // Left side: Clock and Slide Info
     const headerLeft = document.createElement("div");
     headerLeft.className = "presenter-header-left";
 
-    this.clockElement = document.createElement("div");
+    this.clockElement = document.createElement("time");
     this.clockElement.id = "presenter-clock";
+    this.clockElement.setAttribute("aria-label", "現在時刻");
 
     this.slideInfoElement = document.createElement("div");
     this.slideInfoElement.id = "presenter-slide-info";
+    this.slideInfoElement.setAttribute("role", "status");
+    this.slideInfoElement.setAttribute("aria-live", "polite");
+    this.slideInfoElement.setAttribute("aria-atomic", "true");
     this.slideInfoElement.innerHTML =
       '<span class="current-slide">1</span> / <span class="total-slides">1</span>';
 
@@ -51,6 +54,11 @@ export class PresenterUI {
 
     this.progressBarElement = document.createElement("div");
     this.progressBarElement.id = "presenter-progress-bar";
+    this.progressBarElement.setAttribute("role", "progressbar");
+    this.progressBarElement.setAttribute("aria-label", "スライド進行状況");
+    this.progressBarElement.setAttribute("aria-valuemin", "0");
+    this.progressBarElement.setAttribute("aria-valuemax", "1");
+    this.progressBarElement.setAttribute("aria-valuenow", "1");
     const progressFill = document.createElement("div");
     progressFill.className = "progress-fill";
     this.progressBarElement.appendChild(progressFill);
@@ -63,15 +71,21 @@ export class PresenterUI {
 
     const timerWrapper = document.createElement("div");
     timerWrapper.id = "presenter-timer";
+    timerWrapper.setAttribute("role", "timer");
+    timerWrapper.setAttribute("aria-label", "経過時間");
     this.timerElement = document.createElement("span");
     this.timerElement.textContent = "00:00";
 
     const timerControls = document.createElement("div");
     const resetBtn = document.createElement("button");
+    resetBtn.type = "button";
     resetBtn.textContent = "Reset";
+    resetBtn.setAttribute("aria-label", "タイマーをリセット");
     resetBtn.onclick = () => this.resetTimer();
     const pauseBtn = document.createElement("button");
+    pauseBtn.type = "button";
     pauseBtn.textContent = "Pause";
+    pauseBtn.setAttribute("aria-label", "タイマーを一時停止");
     pauseBtn.onclick = () => this.toggleTimer(pauseBtn);
 
     timerControls.appendChild(pauseBtn);
@@ -86,28 +100,36 @@ export class PresenterUI {
     header.appendChild(headerRight);
 
     // Current Slide
-    const currentView = document.createElement("div");
+    const currentView = document.createElement("section");
     currentView.id = "presenter-current";
+    currentView.setAttribute("aria-label", "現在のスライド");
 
     // Aspect-ratio container for the iframe — constrains iframe to slide ratio
     this.slideFrameContainer = document.createElement("div");
 
     this.currentFrame = document.createElement("iframe");
+    this.currentFrame.title = "現在のスライド";
+    this.currentFrame.tabIndex = -1;
     // Initial src is empty to avoid race condition with hash update
 
     this.slideFrameContainer.appendChild(this.currentFrame);
     this.slideFrameContainer.id = "slide-frame-container";
+    this.slideFrameContainer.setAttribute("role", "region");
+    this.slideFrameContainer.setAttribute("aria-label", "現在のスライド表示");
     currentView.appendChild(this.slideFrameContainer);
 
     // Slide controls container
-    const slideControls = document.createElement("div");
+    const slideControls = document.createElement("nav");
     slideControls.id = "presenter-slide-controls";
+    slideControls.setAttribute("aria-label", "スライド操作");
 
     // Previous slide button
     const prevBtn = document.createElement("button");
+    prevBtn.type = "button";
     prevBtn.id = "prev-slide-btn";
-    prevBtn.innerHTML = "←";
+    prevBtn.textContent = "←";
     prevBtn.title = "前のスライド (←)";
+    prevBtn.setAttribute("aria-label", "前のスライド");
     prevBtn.onclick = () => {
       if ((window as any).__navigatePrevious) {
         (window as any).__navigatePrevious();
@@ -116,9 +138,11 @@ export class PresenterUI {
 
     // Next slide button
     const nextBtn = document.createElement("button");
+    nextBtn.type = "button";
     nextBtn.id = "next-slide-btn";
-    nextBtn.innerHTML = "→";
+    nextBtn.textContent = "→";
     nextBtn.title = "次のスライド (→)";
+    nextBtn.setAttribute("aria-label", "次のスライド");
     nextBtn.onclick = () => {
       if ((window as any).__navigateNext) {
         (window as any).__navigateNext();
@@ -127,9 +151,12 @@ export class PresenterUI {
 
     // Laser pointer toggle button for slide area
     const laserSlideBtn = document.createElement("button");
+    laserSlideBtn.type = "button";
     laserSlideBtn.id = "laser-slide-btn";
-    laserSlideBtn.innerHTML = "🔴";
+    laserSlideBtn.textContent = "🔴";
     laserSlideBtn.title = "レーザーポインター (クリックでON/OFF)";
+    laserSlideBtn.setAttribute("aria-label", "レーザーポインターをオンにする");
+    laserSlideBtn.setAttribute("aria-pressed", "false");
     laserSlideBtn.onclick = (e) => {
       e.stopPropagation();
       if ((window as any).__togglePresenterPointer) {
@@ -139,9 +166,11 @@ export class PresenterUI {
 
     // Open view in new tab button
     const openViewBtn = document.createElement("button");
+    openViewBtn.type = "button";
     openViewBtn.id = "open-view-btn";
-    openViewBtn.innerHTML = "↗";
+    openViewBtn.textContent = "↗";
     openViewBtn.title = "新規タブでビューモードを開く";
+    openViewBtn.setAttribute("aria-label", "ビューモードを新しいタブで開く");
     openViewBtn.onclick = (e) => {
       e.stopPropagation();
       const viewPath = window.location.pathname.replace(/\/presenter\/?$/, "") || "/";
@@ -157,19 +186,24 @@ export class PresenterUI {
     currentView.appendChild(slideControls);
 
     // Next Slide
-    const nextView = document.createElement("div");
+    const nextView = document.createElement("section");
     nextView.id = "presenter-next";
-    const nextLabel = document.createElement("div");
+    nextView.setAttribute("aria-label", "次のスライド");
+    const nextLabel = document.createElement("h2");
     nextLabel.className = "label";
     nextLabel.textContent = "NEXT SLIDE";
     this.nextFrame = document.createElement("iframe");
+    this.nextFrame.title = "次のスライド";
+    this.nextFrame.tabIndex = -1;
     // Initial src is empty
     nextView.appendChild(nextLabel);
     nextView.appendChild(this.nextFrame);
 
     // Notes
-    this.notesContainer = document.createElement("div");
+    this.notesContainer = document.createElement("aside");
     this.notesContainer.id = "presenter-notes";
+    this.notesContainer.setAttribute("aria-label", "スピーカーノート");
+    this.notesContainer.setAttribute("aria-live", "polite");
 
     this.container.appendChild(header);
     this.container.appendChild(currentView);
@@ -179,6 +213,7 @@ export class PresenterUI {
     // Laser pointer cursor overlay
     this.cursorOverlay = document.createElement("div");
     this.cursorOverlay.id = "presenter-cursor";
+    this.cursorOverlay.setAttribute("aria-hidden", "true");
     this.container.appendChild(this.cursorOverlay);
 
     this.startTime = Date.now();
@@ -276,9 +311,14 @@ export class PresenterUI {
   }
 
   private updateProgressBar(current: number, total: number) {
+    const maximum = Math.max(1, total);
+    const value = Math.min(maximum, Math.max(0, current));
+    this.progressBarElement.setAttribute("aria-valuemax", String(maximum));
+    this.progressBarElement.setAttribute("aria-valuenow", String(value));
+
     const progressFill = this.progressBarElement.querySelector(".progress-fill") as HTMLElement;
     if (progressFill && total > 0) {
-      const progress = (current / total) * 100;
+      const progress = (value / total) * 100;
       progressFill.style.width = `${progress}%`;
     }
   }
@@ -292,44 +332,76 @@ export class PresenterUI {
   }
 
   private startClock() {
-    setInterval(() => {
+    const update = () => {
       const now = new Date();
       this.clockElement.textContent = now.toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
       });
-    }, 1000);
+      this.updateTimer();
+    };
+
+    if (this.clockTimer !== null) {
+      window.clearInterval(this.clockTimer);
+    }
+
+    update();
+    this.clockTimer = window.setInterval(update, 1000);
+  }
+
+  private updateTimer() {
+    if (this.isPaused) return;
+    this.timerElement.textContent = formatElapsedTime(Date.now() - this.startTime);
   }
 
   private resetTimer() {
-    this.startTime = Date.now();
-    this.pausedTime = 0;
+    const now = Date.now();
+    this.startTime = now;
+    this.pausedTime = this.isPaused ? now : 0;
     this.timerElement.textContent = "00:00";
   }
 
   private toggleTimer(btn: HTMLButtonElement) {
-    this.isPaused = !this.isPaused;
     if (this.isPaused) {
-      btn.textContent = "Resume";
-      this.pausedTime = Date.now();
-    } else {
+      // Adjust start time to account for the paused duration.
+      this.startTime += Date.now() - this.pausedTime;
+      this.pausedTime = 0;
+      this.isPaused = false;
       btn.textContent = "Pause";
-      // Adjust start time to account for pause duration
-      const pauseDuration = Date.now() - this.pausedTime;
-      this.startTime += pauseDuration;
+      btn.setAttribute("aria-label", "タイマーを一時停止");
+      this.updateTimer();
+      return;
     }
+
+    this.updateTimer();
+    this.isPaused = true;
+    this.pausedTime = Date.now();
+    btn.textContent = "Resume";
+    btn.setAttribute("aria-label", "タイマーを再開");
+  }
+
+  public destroy() {
+    if (this.clockTimer !== null) {
+      window.clearInterval(this.clockTimer);
+      this.clockTimer = null;
+    }
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
   }
 
   public updateLaserPointerStatus(active: boolean) {
     const laserSlideBtn = document.getElementById("laser-slide-btn") as HTMLButtonElement;
     if (laserSlideBtn) {
+      laserSlideBtn.setAttribute("aria-pressed", String(active));
       if (active) {
-        laserSlideBtn.innerHTML = "🔴";
+        laserSlideBtn.textContent = "🔴";
         laserSlideBtn.title = "レーザーポインター (クリックでOFF)";
+        laserSlideBtn.setAttribute("aria-label", "レーザーポインターをオフにする");
         laserSlideBtn.classList.add("active");
       } else {
-        laserSlideBtn.innerHTML = "⚪";
+        laserSlideBtn.textContent = "⚪";
         laserSlideBtn.title = "レーザーポインター (クリックでON)";
+        laserSlideBtn.setAttribute("aria-label", "レーザーポインターをオンにする");
         laserSlideBtn.classList.remove("active");
       }
     }

@@ -1,7 +1,8 @@
 /**
  * アスペクト比関連のユーティリティ関数
  */
-import { consoleWarn } from "../cli/utils";
+import { consoleWarn } from "../cli/utils.js";
+import { DEFAULT_PRESENTATION_CONFIG } from "../config.js";
 
 export interface AspectRatioDimensions {
   width: number;
@@ -24,23 +25,21 @@ const DEFAULT_BASE_HEIGHT = 720;
  * アスペクト比文字列をパースして寸法を計算する
  *
  * @param aspectRatio - アスペクト比文字列（例: "16:9", "4:3", "1:1"）
- * @param baseWidth - 基準幅（デフォルト: 1280）
  * @returns 計算された寸法
  */
-export function parseAspectRatio(
-  aspectRatio?: string,
-  _baseWidth: number = DEFAULT_BASE_WIDTH,
-): AspectRatioDimensions {
+export function parseAspectRatio(aspectRatio?: string): AspectRatioDimensions {
+  const defaultDimensions = { width: DEFAULT_BASE_WIDTH, height: DEFAULT_BASE_HEIGHT };
+
   if (!aspectRatio) {
     // デフォルトは16:9
-    return { width: DEFAULT_BASE_WIDTH, height: DEFAULT_BASE_HEIGHT };
+    return defaultDimensions;
   }
 
   // "16:9" 形式をパース
   const parts = aspectRatio.split(":");
   if (parts.length !== 2) {
     consoleWarn(`Invalid aspect ratio format: ${aspectRatio || "undefined"}, using default 16:9`);
-    return { width: DEFAULT_BASE_WIDTH, height: DEFAULT_BASE_HEIGHT };
+    return defaultDimensions;
   }
 
   const widthRatio = parseFloat(parts[0] || "");
@@ -48,7 +47,7 @@ export function parseAspectRatio(
 
   if (isNaN(widthRatio) || isNaN(heightRatio) || widthRatio <= 0 || heightRatio <= 0) {
     consoleWarn(`Invalid aspect ratio values: ${aspectRatio || "undefined"}, using default 16:9`);
-    return { width: DEFAULT_BASE_WIDTH, height: DEFAULT_BASE_HEIGHT };
+    return defaultDimensions;
   }
 
   // 高さを基準に幅を計算（16:9の720px高さを基準）
@@ -65,10 +64,10 @@ export function parseAspectRatio(
  * @returns パース結果
  */
 export function parseAspectRatioDetailed(aspectRatio?: string): ParsedAspectRatio {
-  const dimensions = parseAspectRatio(aspectRatio || "");
+  const dimensions = parseAspectRatio(aspectRatio || DEFAULT_PRESENTATION_CONFIG.aspectRatio);
 
   return {
-    ratio: aspectRatio || "16:9",
+    ratio: aspectRatio || DEFAULT_PRESENTATION_CONFIG.aspectRatio,
     width: dimensions.width,
     height: dimensions.height,
   };
@@ -109,7 +108,7 @@ export function generateAspectRatioCSSVariables(aspectRatio?: string): {
   "--slide-ratio-w": string;
   "--slide-ratio-h": string;
 } {
-  const dimensions = parseAspectRatio(aspectRatio || "");
+  const dimensions = parseAspectRatio(aspectRatio || DEFAULT_PRESENTATION_CONFIG.aspectRatio);
 
   return {
     "--slide-width": `${dimensions.width}px`,

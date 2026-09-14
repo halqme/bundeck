@@ -97,12 +97,19 @@
 }
 
 #vnav-context-menu .vnav-context-item {
+  width: 100%;
   padding: 8px 16px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 10px;
   transition: background 0.1s ease;
+  touch-action: manipulation;
 }
 
 #vnav-context-menu .vnav-context-item:hover {
@@ -112,6 +119,12 @@
 
 #vnav-context-menu .vnav-context-item:active {
   background: rgba(79, 195, 247, 0.25);
+}
+
+#vnav-context-menu .vnav-context-item:focus-visible {
+  outline: 2px solid #4fc3f7;
+  outline-offset: -2px;
+  background: rgba(79, 195, 247, 0.2);
 }
 
 #vnav-context-menu hr {
@@ -125,4 +138,12 @@
   margin-left: auto;
   color: #888;
   font-size: 11px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #vnav-buttons,
+  #vnav-buttons button,
+  #vnav-context-menu .vnav-context-item {
+    transition: none;
+  }
 }

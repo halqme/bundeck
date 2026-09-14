@@ -1,6 +1,6 @@
 import type { Token } from "marked";
-import type { Slide } from "../types";
-import type { ContainerToken } from "./extensions/container";
+import type { Slide } from "../types/index.js";
+import type { ContainerToken } from "./extensions/container.js";
 
 /**
  * トークンの内容からテキストを抽出し、文字数を計算

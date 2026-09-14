@@ -1,4 +1,4 @@
-import type { NavigatorOptions } from "./types";
+import type { NavigatorOptions } from "./types.js";
 
 export class SlideNavigator {
   private slides: HTMLElement[];

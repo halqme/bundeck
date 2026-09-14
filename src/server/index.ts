@@ -1,8 +1,8 @@
 import { watch } from "fs";
 import * as path from "path";
-import { parseMarkdown } from "../core/parser";
-import { ServerHTMLGenerator } from "./generator";
-import { consoleInfo, consoleError, consoleWarn } from "../cli/utils";
+import { parseMarkdown } from "../core/parser.js";
+import { ServerHTMLGenerator } from "./generator.js";
+import { consoleInfo, consoleError, consoleWarn } from "../cli/utils.js";
 
 export async function startServer(inputPath: string, port: number) {
   const absoluteInputPath = path.resolve(inputPath);

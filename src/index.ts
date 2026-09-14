@@ -1,4 +1,7 @@
-import { fileURLToPath } from "url";
+import { applyGenerateOptions, type GenerateHTMLOptions, type GenerateOptions } from "./config.js";
+import { ensureOutputDirectory } from "./cli/utils.js";
+import { loadRuntimeScript } from "./utils/runtime.js";
+import { resolve } from "node:path";
 
 // Core modules
 export { MarkdownParser, parseMarkdown } from "./core/parser.js";
@@ -24,6 +27,13 @@ export * from "./client/core/types.js";
 
 // Types
 export * from "./types/index.js";
+export {
+  DEFAULT_PRESENTATION_CONFIG,
+  type GenerateHTMLOptions,
+  type GenerateOptions,
+  type FontSizePreset,
+} from "./config.js";
+export { VERSION, getVersion } from "./version.js";
 
 // CLI utilities
 export * from "./cli/utils.js";
@@ -35,41 +45,29 @@ export * from "./cli/index.js";
  */
 export async function generateSlides(
   markdown: string,
-  options?: {
-    theme?: string;
-    title?: string;
-    outputPath?: string;
-  },
+  options: GenerateOptions = {},
 ): Promise<string> {
   const parser = new (await import("./core/parser.js")).MarkdownParser();
   const presentation = parser.parse(markdown);
 
   const renderer = new (await import("./template/renderer.js")).HTMLRenderer();
 
-  // Override meta with options
-  if (options?.theme) {
-    presentation.meta.theme = options.theme;
-  }
-  if (options?.title) {
-    presentation.meta.title = options.title;
-  }
+  // Override frontmatter values with programmatic options.
+  applyGenerateOptions(presentation.meta, options);
 
   // Load runtime
-  const runtimePath = fileURLToPath(new URL("./client/runtime-static.ts", import.meta.url));
-  const buildResult = await Bun.build({
-    entrypoints: [runtimePath],
-    target: "browser",
-    minify: true,
-  });
-
-  if (!buildResult.success || buildResult.outputs.length === 0) {
-    throw new Error("Failed to build runtime: " + JSON.stringify(buildResult.logs));
-  }
-
-  const runtimeJs = await buildResult.outputs[0]!.text();
+  const runtimeJs = await loadRuntimeScript("view", { minify: true });
 
   const result = await renderer.generate(presentation, runtimeJs);
-  return typeof result === "string" ? result : result.html;
+  const html = typeof result === "string" ? result : result.html;
+
+  if (options.outputPath) {
+    const outputPath = resolve(process.cwd(), options.outputPath);
+    ensureOutputDirectory(outputPath);
+    await Bun.write(outputPath, html);
+  }
+
+  return html;
 }
 
 /**
@@ -87,34 +85,15 @@ export async function parseSlides(
  */
 export async function generateHTML(
   presentation: import("./types/index.js").Presentation,
-  options?: {
-    theme?: string;
-    title?: string;
-  },
+  options: GenerateHTMLOptions = {},
 ): Promise<string> {
   const renderer = new (await import("./template/renderer.js")).HTMLRenderer();
 
-  // Override meta with options
-  if (options?.theme) {
-    presentation.meta.theme = options.theme;
-  }
-  if (options?.title) {
-    presentation.meta.title = options.title;
-  }
+  // Override frontmatter values with programmatic options.
+  applyGenerateOptions(presentation.meta, options);
 
   // Load runtime
-  const runtimePath = fileURLToPath(new URL("./client/runtime-static.ts", import.meta.url));
-  const buildResult = await Bun.build({
-    entrypoints: [runtimePath],
-    target: "browser",
-    minify: true,
-  });
-
-  if (!buildResult.success || buildResult.outputs.length === 0) {
-    throw new Error("Failed to build runtime: " + JSON.stringify(buildResult.logs));
-  }
-
-  const runtimeJs = await buildResult.outputs[0]!.text();
+  const runtimeJs = await loadRuntimeScript("view", { minify: true });
 
   const result = await renderer.generate(presentation, runtimeJs);
   return typeof result === "string" ? result : result.html;

@@ -5,8 +5,8 @@
  * viewport scaling, and the view-mode UI extras (hover nav buttons,
  * context menu).
  */
-import { createViewRuntime } from "./core/runtime-core";
-import { setupViewUI } from "./core/view-ui";
+import { createViewRuntime } from "./core/runtime-core.js";
+import { setupViewUI } from "./core/view-ui.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const { navigator } = createViewRuntime();

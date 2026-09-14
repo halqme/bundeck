@@ -10,36 +10,60 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write # OIDCによる認証に必須
+      id-token: write # Required for npm trusted publishing
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
-      # ビルド用にBunをセットアップ
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
 
-      # npmコマンド用にNode.jsをセットアップ
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: "20"
+          node-version: "24"
           registry-url: "https://registry.npmjs.org"
+          package-manager-cache: false
+
+      - name: Verify release tag
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          package_version="$(node -p "require('./package.json').version")"
+          expected_tag="v${package_version}"
+
+          if [[ "${GITHUB_REF_NAME}" != "${expected_tag}" ]]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match package.json version ${package_version}"
+            exit 1
+          fi
+
+          git fetch origin main:refs/remotes/origin/main --no-tags
+          release_commit="$(git rev-parse "${GITHUB_REF_NAME}^{commit}")"
+
+          if ! git merge-base --is-ancestor "${release_commit}" origin/main; then
+            echo "::error::Release tag must point to a commit contained in main"
+            exit 1
+          fi
+
+          echo "Releasing ${GITHUB_REF_NAME} from ${release_commit}"
 
       - name: Install Dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: Check & Test
         run: |
           bun run check
-          bun run test
+          bun test
 
       - name: Build
         run: bun run build
 
-      # Secret不要。OIDCで認証し、Provenance付きで公開
-      - name: Publish to NPM
+      - name: Verify npm package
+        run: bun run verify:package
+
+      - name: Publish to npm
         run: npm publish

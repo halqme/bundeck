@@ -8,17 +8,17 @@
  * View mode and presenter mode communicate via BroadcastChannel
  * for slide synchronisation and laser-pointer relay.
  */
-import { PresenterUI } from "./presenter/ui";
-import { createViewRuntime } from "./core/runtime-core";
-import { setupViewUI, addContextMenuItem, openPresenterMode } from "./core/view-ui";
+import { PresenterUI } from "./presenter/ui.js";
+import { createViewRuntime } from "./core/runtime-core.js";
+import { setupViewUI, addContextMenuItem, openPresenterMode } from "./core/view-ui.js";
 import {
   getSlideDimensions,
   computeSlideDisplayArea,
   clientToNormalized,
   normalizedToClient,
   calculateLaserPointerSize,
-} from "./core/geometry";
-import type { SyncMessage } from "../types";
+} from "./core/geometry.js";
+import type { SyncMessage } from "../types/index.js";
 
 // ─── Entry point ─────────────────────────────────────────────────
 
@@ -69,7 +69,7 @@ function setupViewMode(channel: BroadcastChannel | null) {
   // View-mode UI extras: hover nav buttons, context menu
   setupViewUI(navigator);
   // Add presenter mode option to context menu (only available in server mode)
-  addContextMenuItem("プレゼンターモードを開く", () => openPresenterMode());
+  addContextMenuItem("Open presenter mode", () => openPresenterMode());
 
   // ── Laser pointer ────────────────────────────────────────────
 
@@ -207,6 +207,7 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
   // 2. UI
   const ui = new PresenterUI();
   ui.mount();
+  window.addEventListener("beforeunload", () => ui.destroy(), { once: true });
   // Aspect ratio is set via CSS custom properties (--slide-ratio-w / --slide-ratio-h)
   // injected at build time from the markdown file's frontmatter.
   (window as any).__presenterUI = ui;
@@ -235,12 +236,21 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
 
   // ── Keyboard ──
   document.addEventListener("keydown", (e) => {
+    const target = e.target;
+    if (
+      target instanceof HTMLElement &&
+      target.closest("button, a, input, select, textarea, [contenteditable]")
+    ) {
+      return;
+    }
+
     switch (e.key) {
       case "ArrowRight":
       case "Space":
+      case " ":
       case "Enter":
       case "n":
-        if (e.key === "Space") e.preventDefault();
+        if (e.key === "Space" || e.key === " ") e.preventDefault();
         navigate(currentIndex + 1);
         break;
       case "ArrowLeft":
@@ -438,7 +448,8 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
   // ── Initialise from hash (after UI mount, via rAF) ──
   requestAnimationFrame(() => {
     const hash = window.location.hash.substring(1);
-    const initialIndex = hash && parseInt(hash, 10) >= 1 ? parseInt(hash, 10) - 1 : 0;
+    const requestedIndex = hash && parseInt(hash, 10) >= 1 ? parseInt(hash, 10) - 1 : 0;
+    const initialIndex = Math.max(0, Math.min(requestedIndex, totalSlides - 1));
 
     // Force initial render (bypass the equality check in navigate)
     currentIndex = initialIndex;

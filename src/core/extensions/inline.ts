@@ -1,5 +1,5 @@
 import type { TokenizerAndRendererExtension, Tokens } from "marked";
-import { attrsToClass } from "./classUtils";
+import { attrsToClass } from "./classUtils.js";
 
 export interface StyledSpanToken extends Tokens.Generic {
   type: "styledSpan";

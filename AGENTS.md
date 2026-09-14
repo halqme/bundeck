@@ -1,103 +1,134 @@
 # AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Development guide for Bundeck contributors and coding agents. Bundeck is a Bun and TypeScript project that generates HTML slides from Markdown.
 
-## 実行手順
+## Working rules
 
-1. `bun run check` を実行して品質チェックとエラー修正を行う。
+- Write project responses and documentation in English.
+- Run `bun run check` before making changes.
+- Run `bun run check` and the tests related to the changed code after making changes.
+- `dist/` contains generated files and should not be edited directly.
+- When changing the public API or Markdown syntax, keep the implementation, tests, and `docs/API.md` in sync.
+- Releases are tagged only after the intended commit has been merged into `main`; never tag a topic branch before merge.
+- Use a concise commit message that clearly describes the change.
 
-### 例
+## Development commands
 
 ```bash
-# 変更をコミットする場合
+# Install dependencies
+bun install
+
+# Build the CLI and library bundles
+bun run build
+
+# Check formatting, linting, and types without modifying files
 bun run check
+
+# Individual checks and fixes
+bun run format
+bun run format:check
+bun run lint
+bun run type-check
+
+# Tests
+bun test
+bun test tests/parser.test.ts
 ```
 
-### 注意事項
+## CLI usage
 
-- コミットメッセージは明確で簡潔に記述すること。
-- 変更前に必ず `bun run check` を実行してください。
+Use the built CLI or the npm package CLI.
 
-## Common Development Commands
+```bash
+# Generate static HTML from Markdown (writes .html next to the input by default)
+bundeck presentation.md
 
-- **Build / Check**: `bun run check && bun run lint && bun run format`
-- **Run Test Suite**: `bun test`
-- **Run a Single Test**: `bun test path/to/file.test.ts`
-- **Watch Mode (if available)**: `bun test --watch`
-- **Update Snapshots**: `bun test --update-snapshots`
-- **Install Dependencies**: `bun install`
+# Specify an output path
+bundeck presentation.md --output slides.html
 
-These commands are the primary workflow for development, ensuring code quality and correctness.
+# Minify generated HTML/CSS
+bundeck presentation.md --minify
 
-## High‑Level Architecture
+# Open the generated presentation in a browser
+bundeck presentation.md --auto-open
 
-The project is a **Markdown‑to‑HTML slide generator** built with Bun and TypeScript. The main components are:
-
-1. **`src/client/runtime-view.ts`** – View-mode runtime for static builds (`bundeck build`). Thin wrapper around `createViewRuntime()` + `setupViewUI()`.
-2. **`src/client/runtime-server.ts`** – Server-mode runtime for `bundeck serve`. Handles both view mode and presenter mode dispatch via `window.location.pathname`.
-3. **`src/client/core/`** – Shared browser-side modules:
-   - `navigator.ts` – `SlideNavigator` class: slide transitions, text scaling, container transform.
-   - `runtime-core.ts` – `createViewRuntime()`: wires up navigator, keyboard nav, hash routing, viewport scaling, and resize handling in one call.
-   - `view-ui.ts` – `setupViewUI()`: floating hover nav buttons (`‹` `›`) at bottom-right and custom right-click context menu.
-   - `geometry.ts` – Slide display‑area math: aspect‑ratio‑aware letterboxing, coordinate normalisation, laser‑pointer size calculation. Used by both view and presenter modes.
-   - `types.ts` – `NavigatorOptions` interface.
-4. **`src/client/presenter/`** – Presenter UI components and styles (dashboard, timer, notes, laser pointer controls).
-5. **`src/core/parser.ts`** – Wraps the `marked` library, registers custom markdown extensions, parses front‑matter, tokenizes the markdown and delegates slide splitting.
-6. **`src/core/splitter.ts`** – Converts the flat token stream from `marked` into an array of `Slide` objects, separating content and speaker notes (via `::: speaker` containers) and handling horizontal rules (`---`) as slide delimiters.
-7. **`src/core/extensions/*`** – Custom `marked` extensions for styled headings, spans, images, paragraphs, and container blocks. They provide additional syntax such as `[text]{.class}` and `::: container` blocks.
-8. **`src/core/layout-design.ts`** – Layout design utilities for slide formatting.
-9. **`src/server/generator.ts`** – Generates the final HTML document. It bundles CSS themes, utility styles, and transpiles the TypeScript runtime to JavaScript using `Bun.Transpiler`. Slides are rendered with `marked` and embedded into a simple HTML template.
-10. **`src/template/renderer.ts`** – Template rendering utilities.
-11. **Types (`src/types/*.ts`)** – Define the `Presentation`, `Slide`, and meta data structures used across the pipeline.
-
-The **view-mode** flow is:
-
-```
-Markdown source → MarkdownParser (marked + extensions) → Token stream
- → splitTokensToSlides (splitter) → Presentation object
- → HTMLGenerator → index.html (bundled with CSS & runtime)
-                                       ↓
-                              runtime-view.ts  (static build)
-                           or runtime-server.ts (server, path‑based dispatch)
-                                       ↓
-                           createViewRuntime() + setupViewUI()
-                           ↓           ↓            ↓
-                     SlideNavigator  keyboard    viewport
-                     (slides, hash)   nav        scaling
+# Start the development server with HMR
+bundeck serve presentation.md
+bundeck serve presentation.md --port 8080
 ```
 
-The **presenter-mode** flow (server only):
+When running locally, use `bun run dist/cli.js` after building.
 
-```
-Presenter UI (dashboard)
-  ├── iframe (current slide, ?role=preview#N)  ← BroadcastChannel sync
-  ├── iframe (next slide preview)
-  ├── speaker notes
-  ├── laser pointer (mouse → normalized → geometry.ts → clients)
-  └── controls (prev / next / laser toggle / open view ↗)
-```
+## Presentation Markdown
 
-## Project Structure
+YAML frontmatter may appear at the beginning of a presentation. Common fields include `title`, `theme`, `mode`, `lang`, `aspectRatio`, and `fontSize`. Other fields are retained as metadata.
 
-- `src/cli/` – Command-line interface and builder utilities.
-- `src/client/` – Runtime code executed in the browser.
-  - `src/client/core/` – Shared core modules (navigator, runtime-core, view-ui, geometry).
-  - `src/client/presenter/` – Presenter UI and styles.
-- `src/core/` – Parsing, token splitting, markdown extensions, and layout design.
-- `src/server/` – Server-side HTML generation.
-- `src/template/` – Template rendering utilities.
-- `src/types/` – Shared TypeScript interfaces.
-- `styles/` – CSS themes and utilities used by the generator.
-- `tests/` – Test suites for all components.
+```markdown
+---
+title: My Presentation
+theme: default
+lang: en
+aspectRatio: 16:9
+fontSize: M
+---
 
-## Helpful Tips for Claude Code
+# Slide 1
 
-- When adding new markdown syntax, extend the appropriate extension under `src/core/extensions` and ensure the parser registers it.
-- If you need to expose additional slide metadata, modify `src/core/parser.ts` where the `PresentationMeta` object is built.
-- For changes affecting the client runtime, update `src/client/runtime-view.ts` (static) or `src/client/runtime-server.ts` (server). If the change is shared between both, consider putting it in `src/client/core/runtime-core.ts`.
-- The geometry module (`src/client/core/geometry.ts`) handles all aspect-ratio-aware coordinate math. If you need to map coordinates between the presenter's iframe and the view mode, use this module.
-- Output MUST BE in Japanese.
+Content...
 
 ---
 
-_Generated by Claude Code._
+# Slide 2
+
+More content...
+```
+
+Built-in extensions include:
+
+- `---`: Split the presentation into slides.
+- `::: speaker ... :::`: Add speaker notes that are hidden from the audience.
+- `::: columns ... :::`: Create a column layout.
+- `{.class-name}`: Add CSS classes to headings, inline elements, images, and other supported elements.
+
+See [`docs/API.md`](docs/API.md) for API details.
+
+## Architecture
+
+- **`src/cli.ts`**: CLI entry point launched by Bun.
+- **`src/cli/`**: Argument parsing, static builds, and CLI output/error handling.
+- **`src/core/parser.ts`**: Extracts frontmatter and tokenizes Markdown with `marked`.
+- **`src/core/splitter.ts`**: Splits tokens into a `Presentation` and `Slide[]`, separating body content and notes.
+- **`src/core/extensions/`**: Markdown extensions for headings, inline elements, images, and containers.
+- **`src/core/layout-design.ts`**: Adjusts slide layout based on content density.
+- **`src/template/renderer.ts`**: Assembles slides, CSS, and runtime code into HTML.
+- **`src/template/styles.ts`**: Maps themes to CSS assets.
+- **`src/styles/`**: Shared CSS, print styles, view UI, and the `default` / `dark` themes.
+- **`src/client/runtime-view.ts`**: View-mode runtime entry point for static HTML.
+- **`src/client/runtime-server.ts`**: View and presenter runtime for the development server.
+- **`src/client/core/`**: Slide navigation, hash routing, viewport scaling, view UI, and coordinate calculations.
+- **`src/client/presenter/`**: Presenter UI, timer, notes, and laser pointer.
+- **`src/server/index.ts`**: Markdown watching, HMR, and HTML/asset serving.
+- **`src/server/generator.ts`**: Bundles the server runtime and generates HTML.
+- **`src/types/`**: Shared `Presentation`, `Slide`, and synchronization message types.
+- **`tests/`**: CLI, parser, extension, and runtime tests.
+
+### Generation flow
+
+```text
+Markdown
+  → MarkdownParser (frontmatter + marked)
+  → splitTokensToSlides
+  → Presentation
+  → HTMLRenderer + client runtime
+  → HTML
+```
+
+View mode uses `runtime-view.ts` and `src/client/core/`. Serve mode exposes view mode at `/` and presenter mode at `/presenter`, synchronizing slide position and laser-pointer state through `BroadcastChannel`.
+
+## Change guidelines
+
+- Implement new Markdown syntax in `src/core/extensions/`, then check registration in `src/core/extensions/index.ts` and the parser/renderer.
+- When adding frontmatter fields, update `src/core/parser.ts`, the shared types, and HTML generation.
+- For runtime changes affecting both view and presenter modes, first consider whether the logic belongs in `src/client/core/`.
+- Keep slide display sizing and presenter coordinate conversion in `src/client/core/geometry.ts`.
+- When changing UI or runtime code, run the relevant tests and, when appropriate, `bun run build` to verify the actual bundles.

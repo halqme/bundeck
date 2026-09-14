@@ -1,6 +1,7 @@
-import { parseArguments, showHelp, consoleError, consoleSuccess, consoleInfo } from "./utils";
-import { build } from "./builder";
-import { startServer } from "../server/index";
+import { parseArguments, showHelp, consoleError, consoleSuccess, consoleInfo } from "./utils.js";
+import { build } from "./builder.js";
+import { startServer } from "../server/index.js";
+import { getVersion } from "../version.js";
 
 export async function runCLI(args: string[]): Promise<string> {
   try {
@@ -25,20 +26,20 @@ export async function runCLI(args: string[]): Promise<string> {
               port = parseInt(portStr, 10);
             }
           } else {
-            consoleError("--portには数値を指定してください", "例: --port 8080");
+            consoleError("--port requires a numeric value.", "Example: --port 8080");
             process.exit(1);
           }
         } else if (arg === "-h" || arg === "--help") {
           consoleInfo(`
-bundeck serve - Start development server
+bundeck serve - Start the development server
 
 Usage:
-  bundeck serve <input.md> [Options]
+  bundeck serve <input.md> [options]
 
 Options:
-  -p, --port <number>    Set server port (default: 3000)
+  -p, --port <number>    Set the server port (default: 3000)
   -h, --help             Show this help message
-            `);
+`);
           process.exit(0);
         } else if (!arg.startsWith("-")) {
           inputPath = arg;
@@ -46,7 +47,7 @@ Options:
       }
 
       if (!inputPath) {
-        consoleError("serveコマンドには入力ファイルが必要です", "bundeck serve <input.md>");
+        consoleError("serve requires an input file.", "Example: bundeck serve <input.md>");
         process.exit(1);
       }
 
@@ -57,7 +58,7 @@ Options:
 
     // Check for version flag
     if (args.includes("--version") || args.includes("-v")) {
-      consoleInfo("Bundeck v0.0.1");
+      consoleInfo(`Bundeck v${getVersion()}`);
       process.exit(0);
     }
 
@@ -77,11 +78,11 @@ Options:
       return outPath;
     });
   } catch (error) {
-    consoleError("予期しないエラーが発生しました", (error as Error).message);
+    consoleError("Unexpected error occurred.", (error as Error).message);
     process.exit(1);
   }
 }
 
 // Re-export utilities for external use
-export { parseArguments, showHelp, type CLIOptions } from "./utils";
-export { build } from "./builder";
+export { parseArguments, showHelp, type CLIOptions } from "./utils.js";
+export { build } from "./builder.js";
