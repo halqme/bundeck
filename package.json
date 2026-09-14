@@ -20,9 +20,11 @@
   "author": "HALQME",
   "repository": {
     "type": "git",
-    "url": "https://github.com/halqme/bundeck"
+    "url": "git+https://github.com/halqme/bundeck.git"
   },
-  "bin": "dist/cli.js",
+  "bin": {
+    "bundeck": "dist/cli.js"
+  },
   "files": [
     "dist"
   ],
