@@ -26,23 +26,20 @@ export async function runCLI(args: string[]): Promise<string> {
               port = parseInt(portStr, 10);
             }
           } else {
-            consoleError("--portには数値を指定してください", "例: --port 8080");
+            consoleError("--port requires a numeric value.", "Example: --port 8080");
             process.exit(1);
           }
         } else if (arg === "-h" || arg === "--help") {
           consoleInfo(`
-bundeck serve - Start development server
+bundeck serve - Start the development server
 
 Usage:
-  bundeck serve <input.md> [Options]
+  bundeck serve <input.md> [options]
 
 Options:
-  -p, --port <number>    Set server port (default: 3000)
+  -p, --port <number>    Set the server port (default: 3000)
   -h, --help             Show this help message
-
-More Info:
-  get https://raw.githubusercontent.com/halqme/bundeck/main/docs/authoring.md.
-            `);
+`);
           process.exit(0);
         } else if (!arg.startsWith("-")) {
           inputPath = arg;
@@ -50,7 +47,7 @@ More Info:
       }
 
       if (!inputPath) {
-        consoleError("serveコマンドには入力ファイルが必要です", "bundeck serve <input.md>");
+        consoleError("serve requires an input file.", "Example: bundeck serve <input.md>");
         process.exit(1);
       }
 
@@ -81,7 +78,7 @@ More Info:
       return outPath;
     });
   } catch (error) {
-    consoleError("予期しないエラーが発生しました", (error as Error).message);
+    consoleError("Unexpected error occurred.", (error as Error).message);
     process.exit(1);
   }
 }

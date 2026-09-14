@@ -6,6 +6,6 @@ import { consoleError } from "./cli/utils.js";
 const args = Bun.argv.slice(2);
 
 runCLI(args).catch((error) => {
-  consoleError("予期しないエラーが発生しました", (error as Error).message);
+  consoleError("Unexpected error occurred.", (error as Error).message);
   process.exit(1);
 });

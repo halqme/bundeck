@@ -80,7 +80,7 @@ export function consoleSuccess(message: string): void {
 export function showFixSuggestion(errorCode: string): void {
   const suggestions: Record<string, string> = {
     FILE_NOT_FOUND: "Check that the file exists",
-    INVALID_OPTION: "Check the option or use -h for help",
+    INVALID_OPTION: "Check that the option is valid, or use -h for help",
     PARSE_ERROR: "Check the Markdown syntax",
     BUILD_ERROR: "Check that the dependencies are correct",
   };
@@ -172,6 +172,9 @@ Examples:
   bundeck presentation.md
   bundeck serve presentation.md
   bundeck presentation.md -o slides.html
+
+Documentation:
+  https://raw.githubusercontent.com/halqme/bundeck/main/docs/authoring.md
 `;
 }
 
