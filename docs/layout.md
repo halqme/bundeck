@@ -10,7 +10,7 @@ Bundeck does not use a single auto-layout algorithm. Layout is handled in stages
 
 1. The requested aspect ratio determines the slide's design dimensions.
 2. The textual content length of each slide selects an initial slide font size.
-3. The `fontSize` frontmatter preset scales theme typography.
+3. An optional `fontSize` frontmatter preset scales theme typography.
 4. In the browser, an overflowing slide can be scaled down further to fit vertically.
 5. The complete slide canvas is scaled to fit a smaller browser viewport.
 
@@ -61,7 +61,7 @@ This is a heuristic based on textual length. It does not measure the final geome
 
 ## `fontSize` presets
 
-The presentation-level `fontSize` frontmatter key controls a theme typography scale.
+The optional presentation-level `fontSize` frontmatter key controls a theme typography scale.
 
 ```yaml
 ---
@@ -73,7 +73,9 @@ Accepted values are `XS`, `S`, `M`, `L`, and `XL`.
 
 The preset scales the theme's heading, body, and code sizes. It is separate from the per-slide content-density calculation described above.
 
-Use the default `M` unless the whole presentation consistently needs a different typography scale. Do not use a smaller global preset as the first response to one overloaded slide.
+If `fontSize` is omitted, Bundeck does not apply a preset class and uses the theme typography values directly. The current `M` preset uses a scale of `1`, so it is effectively neutral relative to the built-in theme defaults.
+
+Do not use a smaller global preset as the first response to one overloaded slide.
 
 ## Runtime overflow scaling
 
@@ -155,7 +157,7 @@ When a slide becomes unexpectedly small, check these causes in order:
 
 1. **Too much textual content** — the build-time density heuristic may already have selected a smaller base size.
 2. **Large rendered elements** — images, tables, code blocks, or nested content can increase the final height and trigger runtime scaling.
-3. **Global `fontSize` preset** — a non-default preset changes typography throughout the presentation.
+3. **Global `fontSize` preset** — an explicit preset changes typography throughout the presentation.
 4. **Narrow aspect ratio** — changing the aspect ratio changes the available design width and can cause more line wrapping.
 5. **Columns** — narrow columns increase wrapping and can make the slide taller even when the total text length is unchanged.
 
