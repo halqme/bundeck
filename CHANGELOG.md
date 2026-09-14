@@ -1,12 +1,13 @@
 # Changelog
 
-## [Unreleased]
+## [0.1.2]
 
 - Added a programmable npm API, TypeScript declarations, and browser runtimes to the published package.
 - Added pause, resume, and reset controls to the Presenter elapsed timer.
 - Made the version and presentation settings available programmatically.
 - Added HTML attribute escaping, image URL sanitization, and Presenter/context-menu accessibility improvements.
 - Added `LICENSE`, `CONTRIBUTING`, and `SECURITY` documentation.
+- Added docs section for help text.
 
 ## [0.1.1]
 

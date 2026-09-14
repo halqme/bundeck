@@ -39,6 +39,9 @@ Usage:
 Options:
   -p, --port <number>    Set server port (default: 3000)
   -h, --help             Show this help message
+
+More Info:
+  get https://raw.githubusercontent.com/halqme/bundeck/main/docs/authoring.md.
             `);
           process.exit(0);
         } else if (!arg.startsWith("-")) {
