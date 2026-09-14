@@ -31,12 +31,12 @@ aspectRatio: 4:3
 Examples:
 
 | Aspect ratio | Design dimensions |
-| --- | ---: |
-| `16:9` | `1280 × 720` |
-| `4:3` | `960 × 720` |
-| `1:1` | `720 × 720` |
-| `21:9` | `1680 × 720` |
-| `3:2` | `1080 × 720` |
+| ------------ | ----------------: |
+| `16:9`       |      `1280 × 720` |
+| `4:3`        |       `960 × 720` |
+| `1:1`        |       `720 × 720` |
+| `21:9`       |      `1680 × 720` |
+| `3:2`        |      `1080 × 720` |
 
 Any positive `width:height` ratio is accepted. Invalid values fall back to `16:9`.
 
@@ -46,12 +46,12 @@ During rendering, Bundeck estimates the amount of textual content on each slide 
 
 The current thresholds are:
 
-| Text length | Density | Initial slide font size |
-| ---: | --- | ---: |
-| `< 100` characters | sparse | `32px` |
-| `100–299` characters | normal | `24px` |
-| `300–599` characters | dense | `18px` |
-| `600+` characters | very dense | `14px` |
+|          Text length | Density    | Initial slide font size |
+| -------------------: | ---------- | ----------------------: |
+|   `< 100` characters | sparse     |                  `32px` |
+| `100–299` characters | normal     |                  `24px` |
+| `300–599` characters | dense      |                  `18px` |
+|    `600+` characters | very dense |                  `14px` |
 
 The content-length estimate includes text from common Markdown structures such as headings, paragraphs, lists, blockquotes, and code blocks.
 

@@ -43,14 +43,14 @@ fontSize: M
 ---
 ```
 
-| Key | Accepted value | Behavior |
-| --- | --- | --- |
-| `title` | String | Sets the generated HTML title. Defaults to `Untitled Presentation`. |
-| `theme` | Theme name | Selects a built-in theme. `default` and `dark` are built in. Unknown names fall back to `default`. |
-| `mode` | `light`, `dark`, or `auto` | Stored as presentation metadata. Built-in theme selection is controlled by `theme`. |
-| `lang` | Language tag | Sets the generated HTML `lang` attribute. Defaults to `en`. |
-| `aspectRatio` | Positive `width:height` ratio | Sets the slide design dimensions. Defaults to `16:9`. Invalid values fall back to `16:9`. |
-| `fontSize` | `XS`, `S`, `M`, `L`, or `XL` | Applies a global typography scale preset. |
+| Key           | Accepted value                | Behavior                                                                                           |
+| ------------- | ----------------------------- | -------------------------------------------------------------------------------------------------- |
+| `title`       | String                        | Sets the generated HTML title. Defaults to `Untitled Presentation`.                                |
+| `theme`       | Theme name                    | Selects a built-in theme. `default` and `dark` are built in. Unknown names fall back to `default`. |
+| `mode`        | `light`, `dark`, or `auto`    | Stored as presentation metadata. Built-in theme selection is controlled by `theme`.                |
+| `lang`        | Language tag                  | Sets the generated HTML `lang` attribute. Defaults to `en`.                                        |
+| `aspectRatio` | Positive `width:height` ratio | Sets the slide design dimensions. Defaults to `16:9`. Invalid values fall back to `16:9`.          |
+| `fontSize`    | `XS`, `S`, `M`, `L`, or `XL`  | Applies a global typography scale preset.                                                          |
 
 ## Slide boundaries
 
@@ -193,15 +193,15 @@ Speaker-note text does not contribute to the slide's content-density calculation
 
 These classes are provided by Bundeck's built-in styles.
 
-| Category | Classes | Purpose |
-| --- | --- | --- |
-| Alignment | `center`, `left`, `right` | Text/block alignment |
-| Vertical placement | `top`, `bottom` | Push content toward the top or bottom of a flex layout |
-| Text | `caption`, `mark`, `muted`, `accent`, `small` | Common text treatments |
-| Block | `block-center`, `overlay-dim` | Center a block or add a dim overlay treatment |
-| Image | `fit`, `cover` | Fit an image within available space or use it as a slide-cover image |
-| Opacity | `opacity-0` through `opacity-100` | Set opacity in steps of 10 |
-| Grayscale | `gray-0` through `gray-100` | Apply grayscale in steps of 10 |
+| Category           | Classes                                       | Purpose                                                              |
+| ------------------ | --------------------------------------------- | -------------------------------------------------------------------- |
+| Alignment          | `center`, `left`, `right`                     | Text/block alignment                                                 |
+| Vertical placement | `top`, `bottom`                               | Push content toward the top or bottom of a flex layout               |
+| Text               | `caption`, `mark`, `muted`, `accent`, `small` | Common text treatments                                               |
+| Block              | `block-center`, `overlay-dim`                 | Center a block or add a dim overlay treatment                        |
+| Image              | `fit`, `cover`                                | Fit an image within available space or use it as a slide-cover image |
+| Opacity            | `opacity-0` through `opacity-100`             | Set opacity in steps of 10                                           |
+| Grayscale          | `gray-0` through `gray-100`                   | Apply grayscale in steps of 10                                       |
 
 Custom class names are emitted into the generated HTML, but Bundeck does not create CSS rules for them automatically.
 
@@ -239,9 +239,9 @@ Tables and fenced code blocks use standard Markdown syntax.
 
 ````markdown
 | Item | Value |
-| --- | ---: |
-| A | 10 |
-| B | 20 |
+| ---- | ----: |
+| A    |    10 |
+| B    |    20 |
 
 ```typescript
 const result = buildSlides(input);
