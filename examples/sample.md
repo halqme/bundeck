@@ -89,7 +89,7 @@ The `{.fit}` class keeps an image within the frame, while `{.opacity 80}` adjust
 
 ---
 
-## 🎭 Background Image (Cover) {.overlay-dim}
+### 🎭 Background Image (Cover) {.overlay-dim}
 
 ![Cover Background](https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=80){.cover}
 
@@ -97,7 +97,7 @@ The `{.fit}` class keeps an image within the frame, while `{.opacity 80}` adjust
 Using the `{.cover}` class displays an image full-screen as a background.
 :::
 
-# Slide with a Background {.center .overlay-dim}
+## Slide with a Background {.center .overlay-dim}
 
 ::: .center .overlay-dim
 Visually striking slides are easy to create.
