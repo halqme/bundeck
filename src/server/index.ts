@@ -73,13 +73,12 @@ export async function startServer(inputPath: string, port: number) {
     }
   });
 
-  Bun.serve({
+  const server = Bun.serve({
     port,
-    async fetch(req) {
-      const url = new URL(req.url);
-
-      // SSE Endpoint
-      if (url.pathname === "/_reload") {
+    routes: {
+      "/_reload": (req, server) => {
+        // Keep the long-lived SSE connection open while no events are emitted.
+        server.timeout(req, 0);
         return new Response(
           new ReadableStream({
             start(controller) {
@@ -95,78 +94,61 @@ export async function startServer(inputPath: string, port: number) {
             },
           },
         );
-      }
+      },
 
-      // Serve HTML
-      if (url.pathname === "/" || url.pathname === "/presenter") {
-        return new Response(currentHTML, {
+      "/": () =>
+        new Response(currentHTML, {
           headers: { "Content-Type": "text/html", "Cache-Control": "no-cache" },
-        });
-      }
+        }),
+      "/presenter": () =>
+        new Response(currentHTML, {
+          headers: { "Content-Type": "text/html", "Cache-Control": "no-cache" },
+        }),
 
-      // Serve in-memory CSS assets for serve mode
-      if (url.pathname === "/assets/styles.css") {
+      "/assets/styles.css": () => {
         if (assetsMemory?.mainCss) {
           return new Response(assetsMemory.mainCss, { headers: { "Content-Type": "text/css" } });
         }
         consoleWarn("CSS assets not found in memory");
         return new Response("Not Found", { status: 404 });
-      }
-
-      if (url.pathname === "/assets/theme.css") {
+      },
+      "/assets/theme.css": () => {
         if (assetsMemory?.themeCss) {
           return new Response(assetsMemory.themeCss, { headers: { "Content-Type": "text/css" } });
         }
         return new Response("Not Found", { status: 404 });
-      }
-
-      if (url.pathname === "/assets/view-ui.css") {
+      },
+      "/assets/view-ui.css": () => {
         if (assetsMemory?.viewUiCss) {
           return new Response(assetsMemory.viewUiCss, { headers: { "Content-Type": "text/css" } });
         }
         return new Response("Not Found", { status: 404 });
-      }
-
-      if (url.pathname === "/assets/presenter.css") {
+      },
+      "/assets/presenter.css": () => {
         if (assetsMemory?.presenterCss) {
           return new Response(assetsMemory.presenterCss, {
             headers: { "Content-Type": "text/css" },
           });
         }
         return new Response("Not Found", { status: 404 });
-      }
-
-      if (url.pathname === "/assets/print.css") {
+      },
+      "/assets/print.css": () => {
         if (assetsMemory?.printCss) {
           return new Response(assetsMemory.printCss, { headers: { "Content-Type": "text/css" } });
         }
         return new Response("Not Found", { status: 404 });
-      }
+      },
 
-      // Static assets (images, etc) relative to markdown file
-      // SECURITY: Prevent directory traversal
-      const safePath = path
-        .normalize(decodeURIComponent(url.pathname))
-        .replace(/^(\.\.[/\\])+/, "");
-      const filePath = path.join(inputDir, safePath);
-
-      if (!filePath.startsWith(inputDir)) {
-        return new Response("Forbidden", { status: 403 });
-      }
-
-      const file = Bun.file(filePath);
-      if (await file.exists()) {
-        return new Response(file);
-      }
-
-      return new Response("Not Found", { status: 404 });
+      // Serve static assets relative to the Markdown file.
+      // Bun's directory route handles path normalization and traversal protection.
+      "/*": { dir: inputDir },
     },
   });
 
   // Handle cleanup
-  process.on("SIGINT", () => {
+  process.on("SIGINT", async () => {
     watcher.close();
-    process.exit(0);
+    await server.stop(true);
   });
 }
 
