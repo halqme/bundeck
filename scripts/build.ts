@@ -23,6 +23,7 @@ async function buildEntry(
       target,
       minify: options.minify ?? false,
       sourcemap: options.sourcemap ?? false,
+      tsconfig: join(rootDir, "tsconfig.json"),
     });
 
     if (result.success) {

@@ -163,7 +163,7 @@ body.mode-presenter {
 }
 
 #slide-frame-container {
-  /* Sizing is handled by PresenterUI.fitSlideFrame() in JavaScript —
+  /* Sizing is handled by the Solid presenter dashboard in dashboard.tsx —
      guarantees the aspect ratio from the markdown file's frontmatter
      is always maintained regardless of viewport size. */
   flex: none;

@@ -204,16 +204,13 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
     return notes ? notes.innerHTML : "";
   });
 
-  // 2. UI
-  const ui = new PresenterUI();
-  ui.mount();
-  window.addEventListener("beforeunload", () => ui.destroy(), { once: true });
-  // Aspect ratio is set via CSS custom properties (--slide-ratio-w / --slide-ratio-h)
-  // injected at build time from the markdown file's frontmatter.
-  (window as any).__presenterUI = ui;
-
-  // 3. State
+  // 2. State and UI
   let currentIndex = 0;
+  let ui: PresenterUI;
+
+  const updateHash = (index: number) => {
+    window.location.hash = `#${index + 1}`;
+  };
 
   // Navigation functions (used by UI buttons and keyboard)
   const navigate = (index: number, shouldUpdateHash = true) => {
@@ -226,13 +223,17 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
     if (shouldUpdateHash) updateHash(target);
   };
 
-  const updateHash = (index: number) => {
-    window.location.hash = `#${index + 1}`;
+  ui = new PresenterUI({
+    onNavigatePrevious: () => navigate(currentIndex - 1),
+    onNavigateNext: () => navigate(currentIndex + 1),
+    onTogglePresenterPointer: (clientX, clientY) => togglePresenterPointer(clientX, clientY),
+  });
+  ui.mount();
+  const previousBeforeUnload = window.onbeforeunload;
+  window.onbeforeunload = (event) => {
+    ui.destroy();
+    return previousBeforeUnload?.call(window, event);
   };
-
-  // Expose navigation to UI buttons
-  (window as any).__navigateNext = () => navigate(currentIndex + 1);
-  (window as any).__navigatePrevious = () => navigate(currentIndex - 1);
 
   // ── Keyboard ──
   document.addEventListener("keydown", (e) => {
@@ -322,10 +323,9 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
     );
 
     // Update presenter's own cursor overlay
-    const presenterUI = (window as any).__presenterUI;
-    if (presenterUI?.updateLaserPointerPosition && area) {
+    if (area) {
       const pos = normalizedToClient(x, y, area);
-      presenterUI.updateLaserPointerPosition(pos.x, pos.y, valid && isLaserPointerOn);
+      ui.updateLaserPointerPosition(pos.x, pos.y, valid && isLaserPointerOn);
     }
 
     if (isLaserPointerOn) {
@@ -377,7 +377,7 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
   if (slideContainer) slideContainer.style.userSelect = "none";
 
   // Toggle laser pointer
-  (window as any).__togglePresenterPointer = (clientX?: number, clientY?: number) => {
+  function togglePresenterPointer(clientX?: number, clientY?: number) {
     isLaserPointerOn = !isLaserPointerOn;
     console.log(
       `[bundeck] toggle: now isLaserPointerOn=${isLaserPointerOn}, click=(${clientX}, ${clientY})`,
@@ -408,21 +408,17 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
       }
 
       // Update the presenter's own overlay
-      const presenterUI = (window as any).__presenterUI;
-      if (presenterUI?.updateLaserPointerPosition && area) {
+      if (area) {
         const pos = normalizedToClient(x, y, area);
-        presenterUI.updateLaserPointerPosition(pos.x, pos.y, valid);
+        ui.updateLaserPointerPosition(pos.x, pos.y, valid);
       }
     } else {
       sendPointerUpdate(0, 0, false);
       console.log(`[bundeck] toggle: → sent active:false (turning OFF)`);
       // Overlay is hidden via updateLaserPointerStatus below
     }
-    const presenterUI = (window as any).__presenterUI;
-    if (presenterUI?.updateLaserPointerStatus) {
-      presenterUI.updateLaserPointerStatus(isLaserPointerOn);
-    }
-  };
+    ui.updateLaserPointerStatus(isLaserPointerOn);
+  }
 
   // ── Bidirectional sync ──
   const handleHash = () => {
@@ -434,7 +430,11 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
     }
   };
 
-  window.addEventListener("hashchange", handleHash);
+  const previousHashChange = window.onhashchange;
+  window.onhashchange = (event) => {
+    previousHashChange?.call(window, event);
+    handleHash();
+  };
 
   if (channel) {
     channel.onmessage = (event) => {
@@ -458,9 +458,6 @@ function setupPresenterMode(channel: BroadcastChannel | null) {
     channel?.postMessage({ type: "navigate", index: initialIndex });
     updateHash(initialIndex);
 
-    const presenterUI = (window as any).__presenterUI;
-    if (presenterUI?.updateLaserPointerStatus) {
-      presenterUI.updateLaserPointerStatus(false);
-    }
+    ui.updateLaserPointerStatus(false);
   });
 }
