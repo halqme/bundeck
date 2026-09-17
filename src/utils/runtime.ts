@@ -34,7 +34,9 @@ export async function loadRuntimeScript(
     const result = await Bun.build({
       entrypoints: [fileURLToPath(sourceUrl)],
       target: "browser",
+      format: "iife",
       minify,
+      tsconfig: fileURLToPath(new URL("../../tsconfig.json", import.meta.url)),
     });
 
     if (result.success && result.outputs.length > 0) {

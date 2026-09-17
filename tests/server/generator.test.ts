@@ -30,6 +30,17 @@ describe("ServerHTMLGenerator", () => {
     expect(html).toContain("<script>");
   });
 
+  it("should isolate the browser runtime from window globals", async () => {
+    const generator = new ServerHTMLGenerator();
+    const result = (await generator.generate(mockPresentation)) as string;
+    const scriptStart = result.indexOf("<script>") + "<script>".length;
+    const scriptEnd = result.indexOf("</script>", scriptStart);
+
+    expect(scriptStart).toBeGreaterThan("<script>".length - 1);
+    expect(scriptEnd).toBeGreaterThan(scriptStart);
+    expect(result.slice(scriptStart, scriptEnd).trimStart()).toStartWith("(() => {");
+  });
+
   it("should handle options correctly", async () => {
     const generator = new ServerHTMLGenerator({ inlineAssets: false });
     const result = await generator.generate(mockPresentation);

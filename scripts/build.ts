@@ -21,6 +21,7 @@ async function buildEntry(
       entrypoints: [join(rootDir, entrypoint)],
       outdir: buildDir,
       target,
+      format: target === "browser" ? "iife" : undefined,
       minify: options.minify ?? false,
       sourcemap: options.sourcemap ?? false,
       tsconfig: join(rootDir, "tsconfig.json"),
