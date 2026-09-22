@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "marked": "18.0.13",
-    "solid-js": "1.9.9"
+    "solid-js": "1.9.15"
   },
   "devDependencies": {
     "@types/bun": "1.4.2",
