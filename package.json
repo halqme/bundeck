@@ -58,7 +58,7 @@
     "format:check": "oxfmt --check"
   },
   "dependencies": {
-    "marked": "18.0.13",
+    "marked": "18.0.14",
     "solid-js": "1.9.15"
   },
   "devDependencies": {
