@@ -62,10 +62,10 @@
     "solid-js": "1.9.15"
   },
   "devDependencies": {
-    "@types/bun": "1.4.2",
+    "@types/bun": "1.4.3",
     "@types/marked": "6.0.0",
-    "oxfmt": "0.68.0",
-    "oxlint": "1.83.0"
+    "oxfmt": "0.73.0",
+    "oxlint": "1.88.0"
   },
   "peerDependencies": {},
   "engines": {
